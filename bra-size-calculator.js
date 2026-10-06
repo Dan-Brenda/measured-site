@@ -1,4 +1,4 @@
-/* Measured's bra size calculator (Phase 385). Built by release/site.js from the repository: the extension's own sizing code (src/sizingConstants.js, src/fitEngine.js, src/sizeLabelReader.js, src/europeanBandLabels.js, src/measurementValidation.js, src/fitInstructionParser.js, src/cupInstructionParser.js, src/chartMatcher.js, src/letterConsensus.js, src/styleAdjustment.js, src/cupLadder.js, src/brandFormula.js, src/cupDisplay.js, src/shopifyVariantFeed.js, src/sizeAvailability.js, src/alphaSizeAvailability.js, src/badgeCopy.js, src/decideAnswer.js), then release/calculator/answers.js and release/calculator/page.js, comments out. Not edited by hand. */
+/* Measured's bra size calculator (Phase 385). Built by release/site.js from the repository: the extension's own sizing code (src/sizingConstants.js, src/fitEngine.js, src/sizeLabelReader.js, src/europeanBandLabels.js, src/measurementValidation.js, src/fitInstructionParser.js, src/cupInstructionParser.js, src/chartMatcher.js, src/letterConsensus.js, src/styleAdjustment.js, src/cupLadder.js, src/brandFormula.js, src/cupDisplay.js, src/shopifyVariantFeed.js, src/sizeAvailability.js, src/alphaSizeAvailability.js, src/badgeCopy.js, src/decideAnswer.js), then release/calculator/answers.js and release/calculator/ui.js and release/calculator/page.js, comments out. Not edited by hand. */
 /* src/sizingConstants.js */
 const SIZING_CONSTANTS = (() => {
 const freeze = (value) => Object.freeze(value);
@@ -1327,7 +1327,7 @@ const NON_RATING_LEGEND = Object.freeze({
 'Not a bra size': "This product isn't sized by band and cup.",
 'Not on their chart': "This chart has no size for your measurements.",
 'Between chart sizes': "Your measurements fall between two sizes on this chart; both are shown.",
-'Beyond our range': "Your measurements are past the sizes Measured can work out.",
+'Beyond our range': "Your measurements are past the sizes Measured Size can work out.",
 });
 if (typeof module !== 'undefined' && module.exports) {
 module.exports = {
@@ -2000,8 +2000,8 @@ label: hit.label,
 band: null,
 cup: null,
 explanation: hit.split
-? `${rule.note} No size conversion for this brand is on file, so this is the usual one, and the brand size charts Measured has split on ${baseSize.label}: ${hit.split[0][1]} of the ${hit.total} that list it give ${hit.split[0][0]}, and ${hit.split[1][1]} give ${hit.split[1][0]}. If this listing has its own size chart, it is the one to go by.${fitInstructionNote}`
-: `${rule.note} No size conversion for this brand is on file, so this is the usual one: ${hit.agree} of the ${hit.total} brand size charts Measured has that list ${baseSize.label} give ${hit.label}. If this listing has its own size chart, it is the one to go by.${fitInstructionNote}`,
+? `${rule.note} No size conversion for this brand is on file, so this is the usual one, and the brand size charts Measured Size has split on ${baseSize.label}: ${hit.split[0][1]} of the ${hit.total} that list it give ${hit.split[0][0]}, and ${hit.split[1][1]} give ${hit.split[1][0]}. If this listing has its own size chart, it is the one to go by.${fitInstructionNote}`
+: `${rule.note} No size conversion for this brand is on file, so this is the usual one: ${hit.agree} of the ${hit.total} brand size charts Measured Size has that list ${baseSize.label} give ${hit.label}. If this listing has its own size chart, it is the one to go by.${fitInstructionNote}`,
 confidence: 'Uncertain, check size chart',
 detailQuality: detailQualityFor(ambiguous, source),
 confidenceFactors: {
@@ -5209,7 +5209,7 @@ const calculated = substitution.calculatedLabel || null;
 const projected = substitution.projectedLabel && substitution.projectedLabel !== substitution.headlineLabel ? substitution.projectedLabel : null;
 if (projected) return long ? `In this retailer's own sizes you measure as ${projected}, which isn't available here` : `Your ${projected} isn't available here`;
 if (Array.isArray(substitution.unreadLetters) && substitution.unreadLetters.length && calculated) {
-return `${calculated} isn't among the sizes Measured can read on this listing`;
+return `${calculated} isn't among the sizes Measured Size can read on this listing`;
 }
 if (substitution.availability === 'notMade' && calculated) return `This style isn't made in ${calculated}`;
 if (substitution.availability === 'brandRange' && calculated) return long ? `${calculated} isn't made here` : `Your ${calculated} isn't made here`;
@@ -5223,10 +5223,10 @@ return `${letters.slice(0, -1).join(', ')} and ${letters[letters.length - 1]}`;
 function unreadLettersSentence(letters, shownLabel) {
 const cups = `${joinLetters(letters)} cups`;
 const closer = shownLabel ? `closer to your size than ${shownLabel}` : 'your size';
-return `This listing also has ${cups} in stock, in letters Measured can't yet match to your measurements, and ${letters.length === 1 ? 'that' : 'one of those'} may be ${closer}. The brand's own size guide can tell you which.`;
+return `This listing also has ${cups} in stock, in letters Measured Size can't yet match to your measurements, and ${letters.length === 1 ? 'that' : 'one of those'} may be ${closer}. The brand's own size guide can tell you which.`;
 }
 function unreadLettersStepText(letters, calculatedLabel) {
-return `${calculatedLabel} isn't among the sizes Measured can read here. ${joinLetters(letters)} cups are in stock in letters Measured can't match yet, so your size may be one of them.`;
+return `${calculatedLabel} isn't among the sizes Measured Size can read here. ${joinLetters(letters)} cups are in stock in letters Measured Size can't match yet, so your size may be one of them.`;
 }
 function substitutionWhy(baseSentence, substitution) {
 if (!substitution) return baseSentence;
@@ -5324,7 +5324,7 @@ summaries.push(total === 1 ? line(first, false) : line(`${first} and ${total - 1
 if (total > 1) summaries.push(line(first, false));
 summaries.push(total === 1 ? line(confidence ? 'one brand' : 'One brand', false) : line(`${total} brands`, true));
 const lead = confidence
-? `${suggestion.sizeFromBase === true ? `Your base size, ${size},` : size} is made by brands whose sizing Measured knows better than this listing's.`
+? `${suggestion.sizeFromBase === true ? `Your base size, ${size},` : size} is made by brands whose sizing Measured Size knows better than this listing's.`
 : (total === 1 ? `${size} isn't available here, and ${first} makes it.` : `${size} isn't available here, and these brands make it.`);
 const brands = named.map((b) => {
 const theirs = b.destinationLabel && b.destinationLabel !== size ? `, labelled ${b.destinationLabel} there` : '';
@@ -5346,7 +5346,7 @@ lead,
 brands,
 more,
 moreCount: Math.max(0, total - named.length),
-caveat: "Measured hasn't checked their stock.",
+caveat: "Measured Size hasn't checked their stock.",
 };
 }
 function bandOnlyWhy(matchDetail, substitution, displayBaseLabel) {
@@ -5366,10 +5366,10 @@ let base;
 if (matchDetail && matchDetail.type === 'bandOnly') return bandOnlyWhy(matchDetail, substitution, displayBaseLabel);
 if (matchDetail && matchDetail.type === 'oneSizeOnly') return ONE_SIZE_ONLY_LINE;
 if (matchDetail && matchDetail.type === 'storeSizesUnread') {
-return `Measured can't read this store's sizes, so this is your base size, ${displayBaseLabel || matchDetail.baseLabel}, worked out from your measurements alone, not one from this listing.`;
+return `Measured Size can't read this store's sizes, so this is your base size, ${displayBaseLabel || matchDetail.baseLabel}, worked out from your measurements alone, not one from this listing.`;
 }
 if (matchDetail && matchDetail.type === 'brandDataUnavailable') {
-return `Measured couldn't load its brand data, so this is your base size, ${displayBaseLabel || matchDetail.baseLabel}, worked out from your measurements alone, not this store's size. Close and reopen Measured to try again.`;
+return `Measured Size couldn't load its brand data, so this is your base size, ${displayBaseLabel || matchDetail.baseLabel}, worked out from your measurements alone, not this store's size. Close and reopen Measured Size to try again.`;
 }
 if (!matchDetail) {
 base = (confidence === 'No style detected')
@@ -5502,7 +5502,7 @@ if (matchDetail.type === 'oneSizeOnly') {
 return 'This listing comes in one size only, so no bra-size adjustment applies.';
 }
 if (matchDetail.type === 'brandDataUnavailable') {
-return "Measured's brand data didn't load, so no brand or listing adjustment was made.";
+return "Measured Size's brand data didn't load, so no brand or listing adjustment was made.";
 }
 if (matchDetail.type === 'storeSizesUnread') {
 return "This store's sizes couldn't be read, so no listing adjustment was made.";
@@ -5595,7 +5595,7 @@ return {
 label: 'Availability not tracked',
 icon: '○',
 cls: 'availNeutral',
-tooltip: "Measured couldn't load its brand data, so it didn't match your size to this listing's sizes or check their stock. Close and reopen Measured to try again.",
+tooltip: "Measured Size couldn't load its brand data, so it didn't match your size to this listing's sizes or check their stock. Close and reopen Measured Size to try again.",
 };
 }
 if (gridSkippedReason === 'brand-calculator-refused') {
@@ -5643,14 +5643,14 @@ return {
 label: 'Availability not tracked',
 icon: '○',
 cls: 'availNeutral',
-tooltip: "This listing's sizes couldn't be read: its size options hadn't loaded when Measured read the page, so no size on it was checked. Close and reopen Measured to read them again.",
+tooltip: "This listing's sizes couldn't be read: its size options hadn't loaded when Measured Size read the page, so no size on it was checked. Close and reopen Measured Size to read them again.",
 };
 }
 return {
 label: 'Availability not tracked',
 icon: '○',
 cls: 'availNeutral',
-tooltip: "This retailer doesn't publish which sizes are in stock in a way Measured can read, so no stock check was attempted. Nothing went wrong.",
+tooltip: "This retailer doesn't publish which sizes are in stock in a way Measured Size can read, so no stock check was attempted. Nothing went wrong.",
 };
 }
 if (gridResult.stockUnconfirmed && (gridResult.status === 'exact' || gridResult.status === 'substituted' || gridResult.status === 'approximate')) {
@@ -5711,8 +5711,8 @@ const lead = bandEnd
 : range
 ? `${c.sourceName}'s letter sizes are made for ${range}; your size is ${shown}, so no letter is recommended.`
 : ((c && c.source === 'usual' && c.usualAllowed === false && c.sourceName)
-? `Measured has ${c.sourceName}'s own letter sizing on record, but not in a form it can use for ${shown}, so no letter is recommended.`
-: `No size chart Measured uses for this listing gives ${shown} a letter size, so no letter is recommended.`);
+? `Measured Size has ${c.sourceName}'s own letter sizing on record, but not in a form it can use for ${shown}, so no letter is recommended.`
+: `No size chart Measured Size uses for this listing gives ${shown} a letter size, so no letter is recommended.`);
 if (!c || !c.label) return { label: 'Not available here', icon: '✕', cls: 'availBad', tooltip: lead };
 if (c.namedOnly) return { label: 'Not available here', icon: '✕', cls: 'availBad', tooltip: `${lead} ${namedClosestSentence(c.closestInStockNamed || { label: c.label })}` };
 const owner = c.sourceName ? `${c.sourceName}'s` : "The brand's";
@@ -5746,7 +5746,7 @@ return {
 label: 'Not confirmed here',
 icon: '○',
 cls: 'availNeutral',
-tooltip: `${shown} isn't among the sizes Measured can read on this listing. ${unreadLettersSentence(gridResult.unreadNearSize, null)}${closest ? ` ${closest}` : ''}`,
+tooltip: `${shown} isn't among the sizes Measured Size can read on this listing. ${unreadLettersSentence(gridResult.unreadNearSize, null)}${closest ? ` ${closest}` : ''}`,
 };
 }
 const beyond = gridResult.nearestBeyondReach;
@@ -5846,7 +5846,7 @@ const letters = floored.split.map(([l]) => l);
 const named = `${letters.slice(0, -1).join(', ')} and ${letters[letters.length - 1]}`;
 const [[firstLetter, firstVotes], ...others] = floored.split;
 const othersSaid = others.map(([l, v], i) => `${i === others.length - 1 ? 'and ' : ''}${v} give ${l}`).join(', ');
-return `Brands split between ${named} for your ${size}: ${firstVotes} of the ${matchDetail.total} brand size charts Measured has that list it give ${firstLetter}, ${othersSaid}, so the charts disagree. ${given} is shown: ${floored.cell}, a smaller size, ${floored.fromTie ? 'can get' : 'gets'} ${letter}, and a larger size never gets a smaller letter.${sameSize}`;
+return `Brands split between ${named} for your ${size}: ${firstVotes} of the ${matchDetail.total} brand size charts Measured Size has that list it give ${firstLetter}, ${othersSaid}, so the charts disagree. ${given} is shown: ${floored.cell}, a smaller size, ${floored.fromTie ? 'can get' : 'gets'} ${letter}, and a larger size never gets a smaller letter.${sameSize}`;
 }
 if (split) {
 const [[a, va], [b, vb]] = split;
@@ -5855,17 +5855,17 @@ const why = matchDetail.splitPick === 'in stock' ? `${shown} is the one of the t
 : (matchDetail.splitPick === 'sold' ? `${shown} is the one of the two this listing sells.`
 : (matchDetail.splitPick === 'nearest' ? `${shown} is the one of the two nearer a size this listing has in stock.`
 : (matchDetail.splitPick === 'majority' ? `${shown}, the one more of them give, is shown.` : `${shown}, the larger, is shown.`)));
-return `Brands split between ${a} and ${b} for your ${size}: ${va} of the ${matchDetail.total} brand size charts Measured has that list it give ${a}, and ${vb} give ${b}. ${why}${sameSize}`;
+return `Brands split between ${a} and ${b} for your ${size}: ${va} of the ${matchDetail.total} brand size charts Measured Size has that list it give ${a}, and ${vb} give ${b}. ${why}${sameSize}`;
 }
 if (!matchDetail.agree) {
 const from = matchDetail.raisedBy;
 return from
-? `None of the ${matchDetail.total} brand size charts Measured has that list your ${size} give ${letter}. ${from.agree} of the ${from.total} that list ${from.cell}, a smaller size, give it ${letter}, and a larger size never gets a smaller letter, so yours is ${letter}.${sameSize}`
-: `None of the ${matchDetail.total} brand size charts Measured has that list your ${size} give ${letter}; it is ${letter} because the charts give that to a smaller size, and a larger size never gets a smaller letter.${sameSize}`;
+? `None of the ${matchDetail.total} brand size charts Measured Size has that list your ${size} give ${letter}. ${from.agree} of the ${from.total} that list ${from.cell}, a smaller size, give it ${letter}, and a larger size never gets a smaller letter, so yours is ${letter}.${sameSize}`
+: `None of the ${matchDetail.total} brand size charts Measured Size has that list your ${size} give ${letter}; it is ${letter} because the charts give that to a smaller size, and a larger size never gets a smaller letter.${sameSize}`;
 }
 return (matchDetail.agree * 2 > matchDetail.total
-? `${matchDetail.agree} of the ${matchDetail.total} brand size charts Measured has that list your ${size} put it in ${letter}.`
-: `Brand size charts disagree about your ${size}: ${matchDetail.agree} of the ${matchDetail.total} Measured has that list it put it in ${letter}.`) + sameSize;
+? `${matchDetail.agree} of the ${matchDetail.total} brand size charts Measured Size has that list your ${size} put it in ${letter}.`
+: `Brand size charts disagree about your ${size}: ${matchDetail.agree} of the ${matchDetail.total} Measured Size has that list it put it in ${letter}.`) + sameSize;
 }
 function provenanceFor(confidenceFactors, extractionTier) {
 const matchDetail = confidenceFactors && confidenceFactors.matchDetail;
@@ -5953,9 +5953,9 @@ if (!order.length) return { text: null, kind: null, displaced: [] };
 return { text: order[0][1], kind: order[0][0], displaced: order.slice(1).map(([kind, text]) => ({ kind, text })) };
 }
 const BAND_ONLY_LINE = "This bra is sold by band only, so the cup fit isn't checked.";
-const ONE_SIZE_ONLY_LINE = "This bra comes in one size only, so Measured can't check it against yours.";
-const BRAND_DATA_UNAVAILABLE_LINE = "Measured couldn't load its brand data, so this is your base size, not this store's size.";
-const STORE_SIZES_UNREAD_LINE = "Measured can't read this store's sizes, so this is your base size, not one from this listing.";
+const ONE_SIZE_ONLY_LINE = "This bra comes in one size only, so Measured Size can't check it against yours.";
+const BRAND_DATA_UNAVAILABLE_LINE = "Measured Size couldn't load its brand data, so this is your base size, not this store's size.";
+const STORE_SIZES_UNREAD_LINE = "Measured Size can't read this store's sizes, so this is your base size, not one from this listing.";
 function bandOnlyDistancePhrase(bandDiff) {
 const words = _bcK.NUMBER_WORDS;
 const n = Math.abs(bandDiff);
@@ -6293,7 +6293,7 @@ gridResult = {
 status: 'out-of-range',
 trueSize: own,
 candidates: [],
-note: 'No size chart Measured can use gives this size a letter size.',
+note: 'No size chart Measured Size can use gives this size a letter size.',
 noLetterSource: true,
 closestLetter: closest ? {
 ...closest,
@@ -6553,27 +6553,99 @@ usualLetter: calcUsualLetter(your),
 brands: data.brandData.brands.map((entry) => calcBrandAnswer(entry, m, data)),
 };
 }
-/* release/calculator/page.js */
+/* release/calculator/ui.js */
 const CALC_BRANDS_SHOWN = 25;
-function calcPage() {
-const $ = (id) => document.getElementById(id);
-const form = $('calcForm');
-const underbustInput = $('calcUnderbust');
-const bustInput = $('calcBust');
-const unitInches = $('calcUnitIn');
-const unitCm = $('calcUnitCm');
-const errorText = $('calcError');
-const results = $('calcResults');
-const search = $('calcBrandSearch');
-const list = $('calcBrandList');
-const showAll = $('calcShowAll');
-const brandCount = $('calcBrandCount');
-const noMatch = $('calcNoMatch');
-const cmPerInch = SIZING_CONSTANTS.CM_PER_INCH;
-const data = MEASURED_CALCULATOR_DATA;
+const calcEscape = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+function calcSavedFromEntry(m, underbustText, bustText) {
+return m.unit === 'cm'
+? { underbust: m.underbust, bust: m.bust, unit: 'cm', underbustCm: parseFloat(underbustText), bustCm: parseFloat(bustText) }
+: { underbust: m.underbust, bust: m.bust, unit: 'in' };
+}
+function calcEntryFromSaved(saved, validateMeasurements) {
+if (!saved || typeof saved !== 'object') return null;
+const check = validateMeasurements(saved.underbust, saved.bust, saved.unit);
+if (!check.valid) return null;
+if (saved.unit === 'cm' && Number.isFinite(saved.underbustCm) && Number.isFinite(saved.bustCm)) {
+return { unit: 'cm', underbust: String(saved.underbustCm), bust: String(saved.bustCm) };
+}
+return { unit: 'in', underbust: String(saved.underbust), bust: String(saved.bust) };
+}
+function calcUiMarkup({ brandCount, guideHtml = '', idPrefix = 'calc' }) {
+const id = (name) => `${idPrefix}${name}`;
+return `<section class="calc" aria-label="Your measurements">
+<form id="${id('Form')}" novalidate>
+<fieldset class="calcUnits">
+<legend class="sr-only">Measurement unit</legend>
+<label><input type="radio" name="${id('Unit')}" id="${id('UnitIn')}" value="in" checked><span>Inches</span></label>
+<label><input type="radio" name="${id('Unit')}" id="${id('UnitCm')}" value="cm"><span>cm</span></label>
+</fieldset>
+<details class="howToMeasure" open>
+<summary>How to measure</summary>
+${guideHtml}
+</details>
+<label class="calcField" for="${id('Underbust')}"><span>Underbust, in <span class="calcUnitName">inches</span></span>
+<input id="${id('Underbust')}" name="underbust" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" aria-describedby="${id('Error')}"></label>
+<label class="calcField" for="${id('Bust')}"><span>Bust, in <span class="calcUnitName">inches</span></span>
+<input id="${id('Bust')}" name="bust" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" aria-describedby="${id('Error')}"></label>
+<div class="calcMemory" id="${id('Memory')}" hidden>
+<label class="calcRemember" for="${id('Remember')}"><input type="checkbox" id="${id('Remember')}"><span id="${id('RememberLabel')}">Remember my measurements on this device</span></label>
+<p class="calcSmall" id="${id('RememberNote')}" hidden></p>
+<p class="calcSmall" id="${id('MemoryStatus')}" role="status"></p>
+<button class="calcButton secondary" type="button" id="${id('Forget')}" hidden>Forget my measurements</button>
+</div>
+<p class="calcError" id="${id('Error')}" role="alert" hidden></p>
+<button class="calcButton" type="submit">Show my size</button>
+</form>
+</section>
+<section class="calcResults" id="${id('Results')}" tabindex="-1" aria-labelledby="${id('ResultsTitle')}" hidden>
+<h2 id="${id('ResultsTitle')}">Your size</h2>
+<p class="calcBig" id="${id('YourSize')}"></p>
+<p class="calcNote" id="${id('YourNote')}" hidden></p>
+<p class="calcSmall">Band from your underbust, to the nearest even inch. Cup from how much bigger your bust is: one US cup letter per inch, counted from halfway between your underbust and the band.</p>
+<h3>Sister sizes</h3>
+<ul class="calcChips" id="${id('Sisters')}"></ul>
+<p class="calcSmall" id="${id('SistersWhen')}">The same cup volume on a band one size tighter or looser. Worth trying when your size is sold out, or when the band feels too tight (go up) or too loose (go down).</p>
+<p class="calcSmall" id="${id('SistersNone')}" hidden>None to show for a size past the ends of our range.</p>
+<h3>In other countries' sizes</h3>
+<div class="table"><table id="${id('IntlTable')}"><thead><tr><th scope="col">Country</th><th scope="col">Size</th></tr></thead><tbody id="${id('Intl')}"></tbody></table></div>
+<p class="calcSmall" id="${id('IntlNone')}" hidden>None to show for a size past the ends of our range.</p>
+<h3>In letter sizes</h3>
+<p class="calcMid" id="${id('UsualLetter')}"></p>
+<p class="calcSmall" id="${id('UsualSentence')}"></p>
+<p class="calcSmall" id="${id('UsualPlus')}" hidden></p>
+<p class="calcSmall">The usual letter, from the brand letter charts Measured Size has. A brand's own chart comes first, below.</p>
+<h3>In each brand's own labels</h3>
+<p class="calcSmall" id="${id('BrandCount')}"></p>
+<label class="calcSearch" for="${id('BrandSearch')}"><span>Find a brand</span><input id="${id('BrandSearch')}" type="search" autocomplete="off" spellcheck="false"></label>
+<ul class="calcBrands" id="${id('BrandList')}" aria-live="polite"></ul>
+<p class="calcSmall" id="${id('NoMatch')}" hidden></p>
+<p><button class="calcButton secondary" type="button" id="${id('ShowAll')}" hidden>Show all ${calcEscape(brandCount)} brands</button></p>
+</section>`;
+}
+function mountBraSizeCalculator(container, opts) {
+const { engine, data, memory = null, onAnswer = null } = opts;
+const prefix = opts.idPrefix || 'calc';
+if (!container.querySelector(`#${prefix}Form`)) {
+container.innerHTML = calcUiMarkup({ brandCount: data.brandData.brands.length, guideHtml: opts.guideHtml || '', idPrefix: prefix });
+}
+const $ = (name) => container.querySelector(`#${prefix}${name}`);
+const form = $('Form');
+const underbustInput = $('Underbust');
+const bustInput = $('Bust');
+const unitInches = $('UnitIn');
+const unitCm = $('UnitCm');
+const errorText = $('Error');
+const results = $('Results');
+const search = $('BrandSearch');
+const list = $('BrandList');
+const showAll = $('ShowAll');
+const brandCount = $('BrandCount');
+const noMatch = $('NoMatch');
+const cmPerInch = engine.cmPerInch;
 let unit = 'in';
 let rows = [];
 let expanded = false;
+let shown = null;
 const text = (el, value) => { el.textContent = value; };
 const make = (tag, className, content) => {
 const el = document.createElement(tag);
@@ -6585,7 +6657,7 @@ const placeholders = { in: ['e.g. 34.25', 'e.g. 38.50'], cm: [`e.g. ${(34.25 * c
 const applyUnit = () => {
 underbustInput.placeholder = placeholders[unit][0];
 bustInput.placeholder = placeholders[unit][1];
-document.querySelectorAll('.calcUnitName').forEach((el) => { el.textContent = unit === 'in' ? 'inches' : 'cm'; });
+container.querySelectorAll('.calcUnitName').forEach((el) => { el.textContent = unit === 'in' ? 'inches' : 'cm'; });
 };
 const convert = (input, from, to) => {
 const raw = parseFloat(input.value);
@@ -6603,23 +6675,22 @@ applyUnit();
 unitInches.addEventListener('change', () => { if (unitInches.checked) switchUnit('in'); });
 unitCm.addEventListener('change', () => { if (unitCm.checked) switchUnit('cm'); });
 [underbustInput, bustInput].forEach((input) => input.addEventListener('input', () => {
-const clean = sanitizeNumericInput(input.value);
+const clean = engine.sanitizeNumericInput(input.value);
 if (clean !== input.value) input.value = clean;
 }));
 unit = unitCm.checked ? 'cm' : 'in';
 applyUnit();
 const paintYourSize = (answer) => {
-text($('calcYourSize'), answer.your.label);
-const note = $('calcYourNote');
+text($('YourSize'), answer.your.label);
+const note = $('YourNote');
 note.hidden = !answer.your.note;
 text(note, answer.your.note || '');
 };
 const paintSisters = (sisters) => {
-const out = $('calcSisters');
+const out = $('Sisters');
 out.innerHTML = '';
-const none = $('calcSistersNone');
-none.hidden = !!sisters;
-$('calcSistersWhen').hidden = !sisters;
+$('SistersNone').hidden = !!sisters;
+$('SistersWhen').hidden = !sisters;
 if (!sisters) return;
 const item = (caption, size) => {
 const li = make('li', 'calcChip');
@@ -6632,15 +6703,15 @@ if (sisters.up) item('one band up', sisters.up);
 if (sisters.at28) item('at band 28, two bands up', sisters.at28);
 };
 const paintInternational = (intl) => {
-const body = $('calcIntl');
+const body = $('Intl');
 body.innerHTML = '';
 const lines = intl ? [
 ['UK', { size: intl.uk, note: 'Same band; UK cup letters.' }],
 ['EU', { size: intl.eu, note: '' }],
 ['France', { size: intl.fr, note: '' }],
 ].filter(([, cell]) => cell.size) : [];
-$('calcIntlNone').hidden = lines.length > 0;
-$('calcIntlTable').hidden = lines.length === 0;
+$('IntlNone').hidden = lines.length > 0;
+$('IntlTable').hidden = lines.length === 0;
 lines.forEach(([country, cell]) => {
 const tr = document.createElement('tr');
 tr.appendChild(make('th', null, country)).setAttribute('scope', 'row');
@@ -6650,9 +6721,9 @@ body.appendChild(tr);
 });
 };
 const paintLetter = (usual) => {
-const label = $('calcUsualLetter');
-const sentence = $('calcUsualSentence');
-const plus = $('calcUsualPlus');
+const label = $('UsualLetter');
+const sentence = $('UsualSentence');
+const plus = $('UsualPlus');
 if (!usual || !usual.label) {
 text(label, '');
 label.hidden = true;
@@ -6686,10 +6757,10 @@ return { main: `Letter sizes: ${cell.label}`, sub: check.trim() || null };
 const renderBrands = () => {
 const query = search.value.trim().toLowerCase();
 const matches = (row) => !query || row.search.includes(query);
-const shown = rows.filter(matches);
+const found = rows.filter(matches);
 list.innerHTML = '';
-const limit = query || expanded ? shown.length : Math.min(shown.length, CALC_BRANDS_SHOWN);
-shown.slice(0, limit).forEach((row) => {
+const limit = query || expanded ? found.length : Math.min(found.length, CALC_BRANDS_SHOWN);
+found.slice(0, limit).forEach((row) => {
 const li = make('li', 'calcBrand');
 li.appendChild(make('span', 'calcBrandName', row.name));
 const sizes = make('span', 'calcBrandSizes');
@@ -6702,24 +6773,63 @@ sizes.appendChild(block);
 li.appendChild(sizes);
 list.appendChild(li);
 });
-noMatch.hidden = shown.length > 0;
-if (!shown.length) text(noMatch, `No brand on file matches "${search.value.trim()}". On a listing, Measured Size still shows your own size in that listing's labels.`);
-showAll.hidden = !!query || expanded || shown.length <= CALC_BRANDS_SHOWN;
+noMatch.hidden = found.length > 0;
+if (!found.length) text(noMatch, `No brand on file matches "${search.value.trim()}". On a listing, Measured Size still shows your own size in that listing's labels.`);
+showAll.hidden = !!query || expanded || found.length <= CALC_BRANDS_SHOWN;
 text(brandCount, `${rows.length} brands on file: the ${data.leading} with the widest reach first, then A to Z.`);
 };
 search.addEventListener('input', renderBrands);
 showAll.addEventListener('click', () => { expanded = true; renderBrands(); });
-form.addEventListener('submit', (event) => {
-event.preventDefault();
-const m = calcMeasurementsFromEntry(underbustInput.value, bustInput.value, unit);
+const remember = $('Remember');
+const rememberNote = $('RememberNote');
+const memoryStatus = $('MemoryStatus');
+const forget = $('Forget');
+const where = memory && memory.device === 'phone' ? 'on this phone' : 'on this device';
+const keep = () => {
+if (!shown) return;
+if (memory.save(calcSavedFromEntry(shown.m, shown.underbustText, shown.bustText))) {
+forget.hidden = false;
+text(memoryStatus, '');
+} else {
+text(memoryStatus, 'This browser would not keep them.');
+}
+};
+if (memory) {
+$('Memory').hidden = false;
+text($('RememberLabel'), `Remember my measurements ${where}`);
+remember.addEventListener('change', () => {
+rememberNote.hidden = !(remember.checked && memory.tickNote);
+text(rememberNote, remember.checked && memory.tickNote ? memory.tickNote : '');
+if (remember.checked) {
+keep();
+if (!shown) text(memoryStatus, 'They are kept when you choose Show my size.');
+} else {
+memory.forget();
+forget.hidden = true;
+text(memoryStatus, `Not kept ${where}.`);
+}
+});
+forget.addEventListener('click', () => {
+memory.forget();
+remember.checked = false;
+rememberNote.hidden = true;
+forget.hidden = true;
+text(memoryStatus, `Your measurements are forgotten ${where}.`);
+});
+}
+const answerEntry = ({ focus }) => {
+const m = engine.calcMeasurementsFromEntry(underbustInput.value, bustInput.value, unit);
 if (!m.valid) {
 text(errorText, m.message);
 errorText.hidden = false;
 results.hidden = true;
+shown = null;
 return;
 }
 errorText.hidden = true;
-const answer = calculatorAnswer(m, data);
+const answer = engine.calculatorAnswer(m, data);
+shown = { m, underbustText: underbustInput.value, bustText: bustInput.value, answer };
+if (memory && remember.checked) keep();
 paintYourSize(answer);
 paintSisters(answer.sisters);
 paintInternational(answer.international);
@@ -6732,7 +6842,153 @@ return { ...row, search: [row.name, ...aliases].join(' ').toLowerCase() };
 expanded = false;
 renderBrands();
 results.hidden = false;
-results.focus();
+if (focus) results.focus();
+if (onAnswer) onAnswer(answer);
+};
+form.addEventListener('submit', (event) => {
+event.preventDefault();
+answerEntry({ focus: true });
 });
+const saved = memory ? calcEntryFromSaved(memory.load(), engine.validateMeasurements) : null;
+if (saved) {
+unitInches.checked = saved.unit === 'in';
+unitCm.checked = saved.unit === 'cm';
+unit = saved.unit;
+applyUnit();
+underbustInput.value = saved.underbust;
+bustInput.value = saved.bust;
+remember.checked = true;
+forget.hidden = false;
+const guide = container.querySelector('.howToMeasure');
+if (guide) guide.open = false;
+answerEntry({ focus: false });
 }
-if (typeof document !== 'undefined' && document.getElementById('calcForm')) calcPage();
+return { answer: () => (shown ? shown.answer : null) };
+}
+if (typeof module !== 'undefined' && module.exports) {
+module.exports = { calcUiMarkup, mountBraSizeCalculator, calcSavedFromEntry, calcEntryFromSaved, CALC_BRANDS_SHOWN };
+}
+/* release/calculator/page.js */
+const CALC_MEMORY_KEY = 'measurements';
+const CALC_HINT_DISMISSED_KEY = 'installHintDismissed';
+function calcStorage() {
+try { return window.localStorage; } catch (err) { return null; }
+}
+function calcLocalMemory(device, tickNote) {
+return {
+device,
+tickNote,
+load() {
+try {
+const store = calcStorage();
+const raw = store && store.getItem(CALC_MEMORY_KEY);
+return raw ? JSON.parse(raw) : null;
+} catch (err) { return null; }
+},
+save(saved) {
+try { calcStorage().setItem(CALC_MEMORY_KEY, JSON.stringify(saved)); return true; } catch (err) { return false; }
+},
+forget() {
+try { calcStorage().removeItem(CALC_MEMORY_KEY); } catch (err) { }
+},
+};
+}
+function calcPhone(ua) {
+if (/iPhone|iPod/.test(ua)) return 'iphone';
+if (/Android/.test(ua) && /Mobile/.test(ua)) return 'android';
+return null;
+}
+function calcSafari(ua, touchPoints) {
+if (!/Version\/[\d.]+.* Safari\//.test(ua) || /CriOS|FxiOS|EdgiOS|OPiOS|OPT\/|GSA\/|YaBrowser|DuckDuckGo|Chrome|Chromium|Edg\/|Android/.test(ua)) return null;
+if (/iPhone|iPod/.test(ua)) return 'iphone';
+if (/iPad/.test(ua) || (/Macintosh/.test(ua) && touchPoints > 1)) return 'ipad';
+if (/Macintosh/.test(ua)) return 'mac';
+return null;
+}
+function calcTickNote(ua, touchPoints, installed) {
+if (installed) return null;
+const words = [];
+if (calcPhone(ua) === 'iphone') words.push("If you add this to your home screen, you'll enter them once more there.");
+const safari = calcSafari(ua, touchPoints);
+if (safari) words.push("Safari may clear these if you don't visit for a week.");
+if (safari === 'iphone' || safari === 'ipad') words.push('Added to your home screen, they stay.');
+return words.length ? words.join(' ') : null;
+}
+function calcInstalled() {
+return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+}
+function calcServiceWorker(container) {
+if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
+const hadWorker = !!navigator.serviceWorker.controller;
+let typed = false;
+container.addEventListener('input', () => { typed = true; });
+container.addEventListener('submit', () => { typed = true; });
+navigator.serviceWorker.addEventListener('controllerchange', () => {
+if (hadWorker && !typed) location.reload();
+});
+navigator.serviceWorker.register('sw.js').catch(() => { });
+}
+function calcInstallHint(phone) {
+const hint = document.getElementById('calcAppHint');
+const words = document.getElementById('calcAppHintText');
+const add = document.getElementById('calcAppHintAdd');
+const close = document.getElementById('calcAppHintClose');
+if (!hint || !phone || calcInstalled()) return () => {};
+const dismissed = () => { try { return calcStorage().getItem(CALC_HINT_DISMISSED_KEY) === '1'; } catch (err) { return false; } };
+const dismiss = () => {
+hint.hidden = true;
+try { calcStorage().setItem(CALC_HINT_DISMISSED_KEY, '1'); } catch (err) { }
+};
+let prompt = null;
+let answered = false;
+const show = () => {
+if (!answered || dismissed()) return;
+if (phone === 'iphone') {
+words.textContent = 'Add Measured Size to your home screen to use it offline: tap Share (on iOS 26 and later, it is in Safari\'s ⋯ menu), then Add to Home Screen.';
+add.hidden = true;
+} else if (prompt) {
+words.textContent = 'Add Measured Size to your home screen to use it offline.';
+add.hidden = false;
+} else {
+return;
+}
+hint.hidden = false;
+};
+window.addEventListener('beforeinstallprompt', (event) => {
+event.preventDefault();
+prompt = event;
+show();
+});
+window.addEventListener('appinstalled', () => { hint.hidden = true; prompt = null; });
+add.addEventListener('click', () => {
+if (!prompt) return;
+const asked = prompt;
+prompt = null;
+hint.hidden = true;
+asked.prompt();
+if (asked.userChoice) asked.userChoice.then((choice) => { if (choice && choice.outcome === 'dismissed') dismiss(); }).catch(() => {});
+});
+close.addEventListener('click', dismiss);
+return () => { answered = true; show(); };
+}
+function calcPage() {
+const container = document.getElementById('calcApp');
+const ua = navigator.userAgent || '';
+const phone = calcPhone(ua);
+const tickNote = calcTickNote(ua, navigator.maxTouchPoints || 0, calcInstalled());
+const answered = calcInstallHint(phone);
+mountBraSizeCalculator(container, {
+engine: {
+calcMeasurementsFromEntry,
+calculatorAnswer,
+sanitizeNumericInput,
+validateMeasurements,
+cmPerInch: SIZING_CONSTANTS.CM_PER_INCH,
+},
+data: MEASURED_CALCULATOR_DATA,
+memory: calcLocalMemory(phone ? 'phone' : 'device', tickNote),
+onAnswer: answered,
+});
+calcServiceWorker(container);
+}
+if (typeof document !== 'undefined' && document.getElementById('calcApp')) calcPage();

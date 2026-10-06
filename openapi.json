@@ -1,0 +1,1098 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Measured Size fit API",
+    "version": "1.0.0",
+    "summary": "Bra sizes from measurements, in each brand's own labels, with the confidence behind each.",
+    "description": "Measured Size's sizing engine, the same code as its Chrome extension and calculator page. Free, no key. Every size comes with the engine's rating and reason; pass them on with the size. Nothing sent is stored or logged: only a count of requests per day per endpoint is kept. How it works: https://measuredsize.com/how-it-works.html. The published summary tables (the brand list and each brand's labels for each base size, as shown on the method page and returned by the API) are licensed under CC BY 4.0: credit \"Measured Size\" and link to https://measuredsize.com/how-it-works.html. The code, the research notes, the page readers and the full brand data are private and not licensed.",
+    "contact": {
+      "name": "Measured Size",
+      "email": "support@measuredsize.com",
+      "url": "https://measuredsize.com/how-it-works.html"
+    },
+    "license": {
+      "name": "CC BY 4.0",
+      "url": "https://creativecommons.org/licenses/by/4.0/"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.measuredsize.com"
+    }
+  ],
+  "externalDocs": {
+    "url": "https://measuredsize.com/how-it-works.html",
+    "description": "How Measured Size works"
+  },
+  "paths": {
+    "/v1/size": {
+      "get": {
+        "summary": "Her bra size from her measurements",
+        "description": "Base size (band from the underbust to the nearest even band; cup from the bust, one US letter per inch), sister sizes one band each way, the UK size, and the EU and French sizes where their tables give the whole size. The confidence is the engine's rating of this size at a store it has no brand data for.",
+        "operationId": "getSize",
+        "parameters": [
+          {
+            "name": "underbust",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "description": "Snug around the ribcage, just under the bust, after breathing out. Decimals allowed.",
+              "examples": [
+                32
+              ]
+            },
+            "description": "Snug around the ribcage, just under the bust, after breathing out. Decimals allowed."
+          },
+          {
+            "name": "bust",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "description": "Around the fullest part of the bust, the tape flat and not pressing in. Decimals allowed.",
+              "examples": [
+                38
+              ]
+            },
+            "description": "Around the fullest part of the bust, the tape flat and not pressing in. Decimals allowed."
+          },
+          {
+            "name": "unit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "in",
+                "cm"
+              ],
+              "default": "in",
+              "description": "The unit both measurements are in: inches (in) or centimetres (cm)."
+            },
+            "description": "The unit both measurements are in: inches (in) or centimetres (cm)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Her size.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "api_version",
+                    "engine",
+                    "measurements",
+                    "size",
+                    "confidence"
+                  ],
+                  "properties": {
+                    "api_version": {
+                      "type": "string"
+                    },
+                    "engine": {
+                      "type": "object",
+                      "description": "The extension version the engine is from, and the brands on file."
+                    },
+                    "method": {
+                      "type": "string"
+                    },
+                    "measurements": {
+                      "type": "object"
+                    },
+                    "size": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "object"
+                    },
+                    "sister_sizes": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "international": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "usual_letter": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A required input is missing or not a number.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No brand on file by that name.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Measurements the extension would not size (its own message says why).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests from this address; wait the seconds in Retry-After.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Her bra size from her measurements (JSON body)",
+        "description": "Base size (band from the underbust to the nearest even band; cup from the bust, one US letter per inch), sister sizes one band each way, the UK size, and the EU and French sizes where their tables give the whole size. The confidence is the engine's rating of this size at a store it has no brand data for.",
+        "operationId": "getSizePost",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "underbust": {
+                    "type": "number",
+                    "description": "Snug around the ribcage, just under the bust, after breathing out. Decimals allowed.",
+                    "examples": [
+                      32
+                    ]
+                  },
+                  "bust": {
+                    "type": "number",
+                    "description": "Around the fullest part of the bust, the tape flat and not pressing in. Decimals allowed.",
+                    "examples": [
+                      38
+                    ]
+                  },
+                  "unit": {
+                    "type": "string",
+                    "enum": [
+                      "in",
+                      "cm"
+                    ],
+                    "default": "in",
+                    "description": "The unit both measurements are in: inches (in) or centimetres (cm)."
+                  }
+                },
+                "required": [
+                  "underbust",
+                  "bust"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Her size.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "api_version",
+                    "engine",
+                    "measurements",
+                    "size",
+                    "confidence"
+                  ],
+                  "properties": {
+                    "api_version": {
+                      "type": "string"
+                    },
+                    "engine": {
+                      "type": "object",
+                      "description": "The extension version the engine is from, and the brands on file."
+                    },
+                    "method": {
+                      "type": "string"
+                    },
+                    "measurements": {
+                      "type": "object"
+                    },
+                    "size": {
+                      "type": "string"
+                    },
+                    "confidence": {
+                      "type": "object"
+                    },
+                    "sister_sizes": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "international": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    },
+                    "usual_letter": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A required input is missing or not a number.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No brand on file by that name.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Measurements the extension would not size (its own message says why).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests from this address; wait the seconds in Retry-After.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/brand-size": {
+      "get": {
+        "summary": "Her size at one brand, in its own labels",
+        "description": "Her size as the brand's band and cup listings label it, and as its letter listings do, each with the engine's rating and reason, or a refusal naming why (for example her band is outside the brand's range). Asked as for a listing known only by its brand: on a real listing its own chart and stock can change the answer.",
+        "operationId": "getBrandSize",
+        "parameters": [
+          {
+            "name": "brand",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "A brand name as shoppers write it (aliases accepted, any case), or an id from the brand list.",
+              "examples": [
+                "Wacoal"
+              ]
+            },
+            "description": "A brand name as shoppers write it (aliases accepted, any case), or an id from the brand list."
+          },
+          {
+            "name": "underbust",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "description": "Snug around the ribcage, just under the bust, after breathing out. Decimals allowed.",
+              "examples": [
+                32
+              ]
+            },
+            "description": "Snug around the ribcage, just under the bust, after breathing out. Decimals allowed."
+          },
+          {
+            "name": "bust",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "description": "Around the fullest part of the bust, the tape flat and not pressing in. Decimals allowed.",
+              "examples": [
+                38
+              ]
+            },
+            "description": "Around the fullest part of the bust, the tape flat and not pressing in. Decimals allowed."
+          },
+          {
+            "name": "unit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "in",
+                "cm"
+              ],
+              "default": "in",
+              "description": "The unit both measurements are in: inches (in) or centimetres (cm)."
+            },
+            "description": "The unit both measurements are in: inches (in) or centimetres (cm)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Her size at the brand.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "api_version",
+                    "engine",
+                    "brand",
+                    "measurements",
+                    "your_size",
+                    "band_and_cup",
+                    "letter_sizes"
+                  ],
+                  "properties": {
+                    "api_version": {
+                      "type": "string"
+                    },
+                    "engine": {
+                      "type": "object",
+                      "description": "The extension version the engine is from, and the brands on file."
+                    },
+                    "method": {
+                      "type": "string"
+                    },
+                    "brand": {
+                      "type": "object"
+                    },
+                    "measurements": {
+                      "type": "object"
+                    },
+                    "your_size": {
+                      "type": "string"
+                    },
+                    "band_and_cup": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "description": "One answer as the extension's card gives it. A size is never given without its rating and badge.",
+                          "required": [
+                            "size",
+                            "rating",
+                            "badge",
+                            "refused",
+                            "why"
+                          ],
+                          "properties": {
+                            "size": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "The size in the brand's own labels; null when refused."
+                            },
+                            "rating": {
+                              "type": "string",
+                              "description": "The engine's rating: Great match, Good match, Likely fits, Uncertain, check size chart; or a refusal: Outside this brand's range, Not on this brand's chart, Between this brand's chart rows, Beyond supported sizes."
+                            },
+                            "badge": {
+                              "type": "string",
+                              "description": "The words the card shows for the rating: Best Match, Strong Match, Possible Match, Limited Data; Not carried here, Not on their chart, Between chart sizes, Beyond our range."
+                            },
+                            "refused": {
+                              "type": "boolean"
+                            },
+                            "why": {
+                              "type": "string",
+                              "description": "The card's own reason, word for word."
+                            },
+                            "band_edge": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "description": "Where a brand's bands stop short of hers: which side, and its last band."
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "letter_sizes": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A required input is missing or not a number.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No brand on file by that name.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Measurements the extension would not size (its own message says why).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests from this address; wait the seconds in Retry-After.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Her size at one brand, in its own labels (JSON body)",
+        "description": "Her size as the brand's band and cup listings label it, and as its letter listings do, each with the engine's rating and reason, or a refusal naming why (for example her band is outside the brand's range). Asked as for a listing known only by its brand: on a real listing its own chart and stock can change the answer.",
+        "operationId": "getBrandSizePost",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "brand": {
+                    "type": "string",
+                    "description": "A brand name as shoppers write it (aliases accepted, any case), or an id from the brand list.",
+                    "examples": [
+                      "Wacoal"
+                    ]
+                  },
+                  "underbust": {
+                    "type": "number",
+                    "description": "Snug around the ribcage, just under the bust, after breathing out. Decimals allowed.",
+                    "examples": [
+                      32
+                    ]
+                  },
+                  "bust": {
+                    "type": "number",
+                    "description": "Around the fullest part of the bust, the tape flat and not pressing in. Decimals allowed.",
+                    "examples": [
+                      38
+                    ]
+                  },
+                  "unit": {
+                    "type": "string",
+                    "enum": [
+                      "in",
+                      "cm"
+                    ],
+                    "default": "in",
+                    "description": "The unit both measurements are in: inches (in) or centimetres (cm)."
+                  }
+                },
+                "required": [
+                  "brand",
+                  "underbust",
+                  "bust"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Her size at the brand.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "api_version",
+                    "engine",
+                    "brand",
+                    "measurements",
+                    "your_size",
+                    "band_and_cup",
+                    "letter_sizes"
+                  ],
+                  "properties": {
+                    "api_version": {
+                      "type": "string"
+                    },
+                    "engine": {
+                      "type": "object",
+                      "description": "The extension version the engine is from, and the brands on file."
+                    },
+                    "method": {
+                      "type": "string"
+                    },
+                    "brand": {
+                      "type": "object"
+                    },
+                    "measurements": {
+                      "type": "object"
+                    },
+                    "your_size": {
+                      "type": "string"
+                    },
+                    "band_and_cup": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "description": "One answer as the extension's card gives it. A size is never given without its rating and badge.",
+                          "required": [
+                            "size",
+                            "rating",
+                            "badge",
+                            "refused",
+                            "why"
+                          ],
+                          "properties": {
+                            "size": {
+                              "type": [
+                                "string",
+                                "null"
+                              ],
+                              "description": "The size in the brand's own labels; null when refused."
+                            },
+                            "rating": {
+                              "type": "string",
+                              "description": "The engine's rating: Great match, Good match, Likely fits, Uncertain, check size chart; or a refusal: Outside this brand's range, Not on this brand's chart, Between this brand's chart rows, Beyond supported sizes."
+                            },
+                            "badge": {
+                              "type": "string",
+                              "description": "The words the card shows for the rating: Best Match, Strong Match, Possible Match, Limited Data; Not carried here, Not on their chart, Between chart sizes, Beyond our range."
+                            },
+                            "refused": {
+                              "type": "boolean"
+                            },
+                            "why": {
+                              "type": "string",
+                              "description": "The card's own reason, word for word."
+                            },
+                            "band_edge": {
+                              "type": [
+                                "object",
+                                "null"
+                              ],
+                              "description": "Where a brand's bands stop short of hers: which side, and its last band."
+                            }
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "letter_sizes": {
+                      "type": [
+                        "object",
+                        "null"
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A required input is missing or not a number.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No brand on file by that name.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Measurements the extension would not size (its own message says why).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests from this address; wait the seconds in Retry-After.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/translate": {
+      "get": {
+        "summary": "A known size at one brand, at another",
+        "description": "Reads her band and cup label at from_brand back to Measured Size's base size through that brand's recorded labels, then gives to_brand's label for it. Rated no higher than Possible Match, since a label says less than measurements. Refuses a letter size, a label the brand's record doesn't give, or one that several sizes give.",
+        "operationId": "translateSize",
+        "parameters": [
+          {
+            "name": "from_brand",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The brand whose size she knows.",
+              "examples": [
+                "Wacoal"
+              ]
+            },
+            "description": "The brand whose size she knows."
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Her band and cup size at from_brand, as that brand labels it.",
+              "examples": [
+                "34DD"
+              ]
+            },
+            "description": "Her band and cup size at from_brand, as that brand labels it."
+          },
+          {
+            "name": "to_brand",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "The brand to translate the size into.",
+              "examples": [
+                "Curvy Kate"
+              ]
+            },
+            "description": "The brand to translate the size into."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The translated size, or a refusal with its reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "api_version",
+                    "engine",
+                    "refused",
+                    "why"
+                  ],
+                  "properties": {
+                    "api_version": {
+                      "type": "string"
+                    },
+                    "engine": {
+                      "type": "object",
+                      "description": "The extension version the engine is from, and the brands on file."
+                    },
+                    "method": {
+                      "type": "string"
+                    },
+                    "from": {
+                      "type": "object"
+                    },
+                    "to": {
+                      "type": "object"
+                    },
+                    "refused": {
+                      "type": "boolean"
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "why": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A required input is missing or not a number.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No brand on file by that name.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Measurements the extension would not size (its own message says why).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests from this address; wait the seconds in Retry-After.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "A known size at one brand, at another (JSON body)",
+        "description": "Reads her band and cup label at from_brand back to Measured Size's base size through that brand's recorded labels, then gives to_brand's label for it. Rated no higher than Possible Match, since a label says less than measurements. Refuses a letter size, a label the brand's record doesn't give, or one that several sizes give.",
+        "operationId": "translateSizePost",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "from_brand": {
+                    "type": "string",
+                    "description": "The brand whose size she knows.",
+                    "examples": [
+                      "Wacoal"
+                    ]
+                  },
+                  "size": {
+                    "type": "string",
+                    "description": "Her band and cup size at from_brand, as that brand labels it.",
+                    "examples": [
+                      "34DD"
+                    ]
+                  },
+                  "to_brand": {
+                    "type": "string",
+                    "description": "The brand to translate the size into.",
+                    "examples": [
+                      "Curvy Kate"
+                    ]
+                  }
+                },
+                "required": [
+                  "from_brand",
+                  "size",
+                  "to_brand"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The translated size, or a refusal with its reason.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "api_version",
+                    "engine",
+                    "refused",
+                    "why"
+                  ],
+                  "properties": {
+                    "api_version": {
+                      "type": "string"
+                    },
+                    "engine": {
+                      "type": "object",
+                      "description": "The extension version the engine is from, and the brands on file."
+                    },
+                    "method": {
+                      "type": "string"
+                    },
+                    "from": {
+                      "type": "object"
+                    },
+                    "to": {
+                      "type": "object"
+                    },
+                    "refused": {
+                      "type": "boolean"
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "why": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A required input is missing or not a number.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No brand on file by that name.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Measurements the extension would not size (its own message says why).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests from this address; wait the seconds in Retry-After.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/brands": {
+      "get": {
+        "summary": "Brands on file",
+        "description": "Every brand Measured Size has researched: its names, what it sells, its cup letters, its ranges, whether its own letter chart is on file, and the latest date in its research record.",
+        "operationId": "listBrands",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Optional: only brands whose name or an alias contains this text."
+            },
+            "description": "Optional: only brands whose name or an alias contains this text."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The brands.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "api_version",
+                    "engine",
+                    "count",
+                    "brands"
+                  ],
+                  "properties": {
+                    "api_version": {
+                      "type": "string"
+                    },
+                    "engine": {
+                      "type": "object",
+                      "description": "The extension version the engine is from, and the brands on file."
+                    },
+                    "method": {
+                      "type": "string"
+                    },
+                    "count": {
+                      "type": "integer"
+                    },
+                    "brands": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Answer": {
+        "type": "object",
+        "description": "One answer as the extension's card gives it. A size is never given without its rating and badge.",
+        "required": [
+          "size",
+          "rating",
+          "badge",
+          "refused",
+          "why"
+        ],
+        "properties": {
+          "size": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The size in the brand's own labels; null when refused."
+          },
+          "rating": {
+            "type": "string",
+            "description": "The engine's rating: Great match, Good match, Likely fits, Uncertain, check size chart; or a refusal: Outside this brand's range, Not on this brand's chart, Between this brand's chart rows, Beyond supported sizes."
+          },
+          "badge": {
+            "type": "string",
+            "description": "The words the card shows for the rating: Best Match, Strong Match, Possible Match, Limited Data; Not carried here, Not on their chart, Between chart sizes, Beyond our range."
+          },
+          "refused": {
+            "type": "boolean"
+          },
+          "why": {
+            "type": "string",
+            "description": "The card's own reason, word for word."
+          },
+          "band_edge": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "description": "Where a brand's bands stop short of hers: which side, and its last band."
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "api_version",
+          "error",
+          "message"
+        ],
+        "properties": {
+          "api_version": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

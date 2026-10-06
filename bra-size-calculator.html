@@ -3,10 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'sha256-wgUSFhgIF7yGjypfhwhM6jv5j7xAanUTTVaYm5YWk+c='; img-src data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; manifest-src 'self'; worker-src 'self'; style-src 'sha256-jaA9hJseGCtXmOSDdzjANIWg2tlZMO+H6SkpM/+R190='; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="description" content="Free bra size calculator. Enter your underbust and bust, in inches or cm, to see your bra size, your sister sizes, and your size in each brand's own labels. Nothing you type leaves the page.">
 <link rel="canonical" href="https://measuredsize.com/bra-size-calculator.html">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why is my size different in different brands?","acceptedAnswer":{"@type":"Answer","text":"Your size from your measurements is the same everywhere. Brands label it differently. Some use UK cup letters, where a US DDD is an E. Some sell letter sizes such as S, M and L, and their charts don't agree on which band and cup sizes each letter covers. Some don't make every band. Measured Size translates your size into each brand's own labels, and says so when a brand doesn't carry it."}},{"@type":"Question","name":"What is a sister size?","acceptedAnswer":{"@type":"Answer","text":"The size one band up with one cup letter smaller, or one band down with one cup letter bigger. It holds the same cup volume on a looser or tighter band. Try one when your size is sold out, or when a band feels too tight (go up a band) or too loose (go down a band)."}},{"@type":"Question","name":"Inches or centimetres?","acceptedAnswer":{"@type":"Answer","text":"Either. Pick one with the switch above the boxes and type what the tape says, decimals included. Centimetres are turned into inches, to the hundredth, before anything is worked out, so the two give the same size."}},{"@type":"Question","name":"Does this page keep my measurements?","acceptedAnswer":{"@type":"Answer","text":"No. Your size is worked out in your browser, on this page. Nothing you type is sent anywhere, stored or put in the page's address, and the page loads nothing from anywhere else."}}]}</script>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#FFFDFB">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1E1917">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Measured Size">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Why is my size different in different brands?","acceptedAnswer":{"@type":"Answer","text":"Your size from your measurements is the same everywhere. Brands label it differently. Some use UK cup letters, where a US DDD is an E. Some sell letter sizes such as S, M and L, and their charts don't agree on which band and cup sizes each letter covers. Some don't make every band. Measured Size translates your size into each brand's own labels, and says so when a brand doesn't carry it."}},{"@type":"Question","name":"What is a sister size?","acceptedAnswer":{"@type":"Answer","text":"The size one band up with one cup letter smaller, or one band down with one cup letter bigger. It holds the same cup volume on a looser or tighter band. Try one when your size is sold out, or when a band feels too tight (go up a band) or too loose (go down a band)."}},{"@type":"Question","name":"Inches or centimetres?","acceptedAnswer":{"@type":"Answer","text":"Either. Pick one with the switch above the boxes and type what the tape says, decimals included. Centimetres are turned into inches, to the hundredth, before anything is worked out, so the two give the same size."}},{"@type":"Question","name":"Does this page keep my measurements?","acceptedAnswer":{"@type":"Answer","text":"Only if you tick \"Remember my measurements\", and then only in your browser on this phone or computer, until you choose \"Forget my measurements\". Your size is worked out on this page. Nothing you type is sent anywhere or put in the page's address, and the page loads nothing from anywhere else."}},{"@type":"Question","name":"Can I keep it on my phone?","acceptedAnswer":{"@type":"Answer","text":"Yes. Add this page to your home screen and it opens like an app, and works with no connection. On Android, use the Add button under your results, or your browser's menu. On iPhone, tap Share in Safari (on iOS 26 and later, it is in the ⋯ menu), then Add to Home Screen."}}]}</script>
 <title>Bra size calculator | Measured Size</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2248%22%20height%3D%2248%22%20viewBox%3D%220%200%20128%20128%22%3E%0A%20%20%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22116%22%20height%3D%22116%22%20rx%3D%2226%22%20fill%3D%22%23A8556D%22%2F%3E%0A%20%20%3Ctext%20x%3D%2264%22%20y%3D%2279%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2C%20'Times%20New%20Roman'%2C%20serif%22%20font-weight%3D%22700%22%20font-size%3D%2276%22%20fill%3D%22%23FFFDFB%22%3EM%3C%2Ftext%3E%0A%20%20%3Crect%20x%3D%2222%22%20y%3D%2290%22%20width%3D%2284%22%20height%3D%2218%22%20rx%3D%224%22%20fill%3D%22%23FFFDFB%22%2F%3E%3Crect%20x%3D%2228.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2236.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%225%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2244.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2252.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%225%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2260.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2268.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%225%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2276.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2284.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%225%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2292.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%0A%3C%2Fsvg%3E">
 <style>
@@ -80,16 +85,28 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 .calcBrandMain .calcBrandLabel { font: 700 20px/1.3 Georgia, "Times New Roman", serif; color: var(--rose); }
 .calcMuted .calcBrandLabel, .calcMuted.calcBrandMain .calcBrandLabel { color: var(--muted); font: 600 16px/1.4 -apple-system, "Segoe UI", Arial, sans-serif; }
 .calcBrandSub { display: block; font-size: 14px; color: var(--muted); }
-.calcInstall { margin: 24px 0; padding: 20px 16px; border-radius: 12px; background: var(--rose); color: var(--bg); }
-.calcInstall p { color: var(--bg); margin: 0 0 12px; }
-.calcInstall strong { color: var(--bg); font: 700 22px/1.3 Georgia, "Times New Roman", serif; display: block; margin-bottom: 4px; }
-.calcInstall a { display: inline-block; background: var(--bg); color: var(--rose); font-weight: 700; padding: 12px 16px; border-radius: 8px; text-decoration: none; }
-.faq dt { color: var(--ink); font-weight: 700; margin-top: 16px; }
-.faq dd { margin: 4px 0 0; color: var(--soft); }
+.calcResults .table { overflow-x: auto; }
+.calcMemory { margin: 12px 0 4px; }
+.calcRemember { display: flex; align-items: flex-start; gap: 10px; color: var(--ink); cursor: pointer; }
+.calcRemember input { width: 22px; height: 22px; margin: 1px 0 0; flex: none; accent-color: var(--rose); }
+.calcMemory .calcSmall { margin: 6px 0 0; }
+.calcMemory .calcSmall:empty { display: none; }
+.calcMemory .calcButton.secondary { margin-top: 8px; }
 @media (min-width: 640px) {
   .calcBrand { flex-direction: row; justify-content: space-between; align-items: baseline; gap: 16px; }
   .calcBrandSizes { text-align: right; max-width: 60%; }
 }
+.calcInstall { margin: 24px 0; padding: 20px 16px; border-radius: 12px; background: var(--rose); color: var(--bg); }
+.calcInstall p { color: var(--bg); margin: 0 0 12px; }
+.calcInstall strong { color: var(--bg); font: 700 22px/1.3 Georgia, "Times New Roman", serif; display: block; margin-bottom: 4px; }
+.calcInstall a { display: inline-block; background: var(--bg); color: var(--rose); font-weight: 700; padding: 12px 16px; border-radius: 8px; text-decoration: none; }
+.calcAppHint { margin: 0 0 16px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); color: var(--ink); font-size: 15px; }
+.calcAppHint span { display: block; margin-bottom: 8px; }
+.calcAppHint button { font: 600 15px/1 -apple-system, "Segoe UI", Arial, sans-serif; border-radius: 8px; padding: 10px 14px; cursor: pointer; margin: 0 8px 0 0; }
+#calcAppHintAdd { color: var(--bg); background: var(--rose); border: 0; }
+#calcAppHintClose { color: var(--rose); background: none; border: 1px solid var(--line); }
+.faq dt { color: var(--ink); font-weight: 700; margin-top: 16px; }
+.faq dd { margin: 4px 0 0; color: var(--soft); }
 </style>
 </head>
 <body>
@@ -101,6 +118,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 </svg><a href="https://measuredsize.com/">Measured Size</a></header>
 <h1>Bra size calculator</h1>
 <p class="lead">Enter your underbust and bust to see your bra size, your sister sizes, and your size in the labels of 159 brands. Nothing you type leaves this page.</p>
+<div id="calcApp">
 <section class="calc" aria-label="Your measurements">
 <form id="calcForm" novalidate>
 <fieldset class="calcUnits">
@@ -131,6 +149,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 <input id="calcUnderbust" name="underbust" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" aria-describedby="calcError"></label>
 <label class="calcField" for="calcBust"><span>Bust, in <span class="calcUnitName">inches</span></span>
 <input id="calcBust" name="bust" type="text" inputmode="decimal" autocomplete="off" spellcheck="false" aria-describedby="calcError"></label>
+<div class="calcMemory" id="calcMemory" hidden>
+<label class="calcRemember" for="calcRemember"><input type="checkbox" id="calcRemember"><span id="calcRememberLabel">Remember my measurements on this device</span></label>
+<p class="calcSmall" id="calcRememberNote" hidden></p>
+<p class="calcSmall" id="calcMemoryStatus" role="status"></p>
+<button class="calcButton secondary" type="button" id="calcForget" hidden>Forget my measurements</button>
+</div>
 <p class="calcError" id="calcError" role="alert" hidden></p>
 <button class="calcButton" type="submit">Show my size</button>
 </form>
@@ -159,10 +183,12 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 <p class="calcSmall" id="calcNoMatch" hidden></p>
 <p><button class="calcButton secondary" type="button" id="calcShowAll" hidden>Show all 159 brands</button></p>
 </section>
+</div>
+<p class="calcAppHint" id="calcAppHint" hidden><span id="calcAppHintText"></span><button type="button" id="calcAppHintAdd" hidden>Add to home screen</button><button type="button" id="calcAppHintClose">Not now</button></p>
 <div class="calcInstall">
 <strong>See your size on any bra listing, in stock or not.</strong>
 <p>Measured Size reads the listing you're on: your size in its labels, whether it's in stock, and a sister size when it isn't. Free, for Chrome on a computer.</p>
-<a href="https://chromewebstore.google.com/detail/phffgakipjdnplpmkibfgnondilcfkpa">Add to Chrome</a>
+<a href="https://chromewebstore.google.com/detail/phffgakipjdnplpmkibfgnondilcfkpa">Add Measured Size to Chrome</a>
 </div>
 <h2 id="how-to-measure">How to measure</h2>
 <p>A soft tape measure is all you need. Stand straight with your arms down, and measure against your skin or over an unpadded bra.</p>
@@ -178,9 +204,11 @@ a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visibl
 <dt>Inches or centimetres?</dt>
 <dd>Either. Pick one with the switch above the boxes and type what the tape says, decimals included. Centimetres are turned into inches, to the hundredth, before anything is worked out, so the two give the same size.</dd>
 <dt>Does this page keep my measurements?</dt>
-<dd>No. Your size is worked out in your browser, on this page. Nothing you type is sent anywhere, stored or put in the page's address, and the page loads nothing from anywhere else.</dd>
+<dd>Only if you tick "Remember my measurements", and then only in your browser on this phone or computer, until you choose "Forget my measurements". Your size is worked out on this page. Nothing you type is sent anywhere or put in the page's address, and the page loads nothing from anywhere else.</dd>
+<dt>Can I keep it on my phone?</dt>
+<dd>Yes. Add this page to your home screen and it opens like an app, and works with no connection. On Android, use the Add button under your results, or your browser's menu. On iPhone, tap Share in Safari (on iOS 26 and later, it is in the ⋯ menu), then Add to Home Screen.</dd>
 </dl>
-<footer><a href="https://measuredsize.com/">Measured Size</a> · <a href="https://measuredsize.com/bra-size-calculator.html">Bra size calculator</a> · <a href="https://measuredsize.com/privacy.html">Privacy policy</a></footer>
+<footer><a href="https://measuredsize.com/">Measured Size</a> · <a href="https://measuredsize.com/bra-size-calculator.html">Bra size calculator</a> · <a href="https://measuredsize.com/how-it-works.html">How it works</a> · <a href="https://measuredsize.com/privacy.html">Privacy policy</a></footer>
 </main>
 <script src="bra-size-calculator-data.js"></script>
 <script src="bra-size-calculator.js"></script>

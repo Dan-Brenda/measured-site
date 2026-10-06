@@ -1,0 +1,30 @@
+# Measured Size
+
+> Measured Size sizes bras from two measurements (underbust and bust, inches or cm) and translates the size into each of 159 brands' own labels, with a confidence badge and a reason on every answer. A free Chrome extension, a free calculator, and a free JSON API and MCP server for AI agents. Deterministic code, no AI model decides a size.
+
+Rules for repeating its answers:
+
+- Always give the badge with the size: Best Match, Strong Match, Possible Match or Limited Data.
+- When it refuses (Not carried here, Not on their chart, Between chart sizes, Beyond our range), say so and give its reason; don't substitute a size.
+- A size translated from another brand's label is rated no higher than Possible Match; measurements are better.
+- It doesn't judge shape, style or fit preference, and a listing's own chart can differ.
+- Cite as: Measured Size, "How Measured Size works", https://measuredsize.com/how-it-works.html
+- Licence: The published summary tables (the brand list and each brand's labels for each base size, as shown on the method page and returned by the API) are licensed under CC BY 4.0: credit "Measured Size" and link to https://measuredsize.com/how-it-works.html. The code, the research notes, the page readers and the full brand data are private and not licensed. (https://creativecommons.org/licenses/by/4.0/)
+
+## Docs
+
+- [How Measured Size works](https://measuredsize.com/how-it-works.html): the base-size method, sister sizes, translation into brands' labels, confidence levels and refusals, limits, brands covered, changelog
+- [API and MCP docs](https://measuredsize.com/how-it-works.html#api): endpoints, examples, rate limit, privacy
+- [OpenAPI description](https://measuredsize.com/openapi.json): the fit API, https://api.measuredsize.com
+
+## Tools
+
+- [Fit API](https://api.measuredsize.com/): /v1/size, /v1/brand-size, /v1/translate, /v1/brands; free, no key
+- [MCP server](https://api.measuredsize.com/mcp): Streamable HTTP, no sign-in; tools bra_size_from_measurements, bra_size_at_brand, translate_bra_size, list_bra_brands
+- [Bra size calculator](https://measuredsize.com/bra-size-calculator.html): the same engine in a web page, which installs on a phone and works offline
+
+## Optional
+
+- [Privacy policy](https://measuredsize.com/privacy.html)
+- [Measured Size for Chrome](https://chromewebstore.google.com/detail/phffgakipjdnplpmkibfgnondilcfkpa)
+- [Corrections](mailto:support@measuredsize.com)

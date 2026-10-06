@@ -2,5 +2,8 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 <url><loc>https://measuredsize.com/</loc></url>
 <url><loc>https://measuredsize.com/bra-size-calculator.html</loc></url>
+<url><loc>https://measuredsize.com/how-it-works.html</loc></url>
+<url><loc>https://measuredsize.com/openapi.json</loc></url>
+<url><loc>https://measuredsize.com/llms.txt</loc></url>
 <url><loc>https://measuredsize.com/privacy.html</loc></url>
 </urlset>
