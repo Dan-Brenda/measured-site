@@ -974,7 +974,7 @@
     "/v1/brands": {
       "get": {
         "summary": "Brands on file",
-        "description": "Every brand Measured Size has researched: its names, what it sells, its cup letters, its ranges, whether its own letter chart is on file, and the latest date in its research record.",
+        "description": "Every brand Measured Size has researched: its names, what it sells, its cup letters, its ranges, whether its own letter chart is on file, and the latest date in its research record. A cup letter past the last one on file for the brand, or a range not on file, is left out rather than given as null.",
         "operationId": "listBrands",
         "parameters": [
           {
