@@ -5,6 +5,7 @@
     "version": "1.0.0",
     "summary": "Bra sizes from measurements, in each brand's own labels, with the confidence behind each.",
     "description": "Measured Size's sizing engine, the same code as its Chrome extension and calculator page. Free, no key. Every size comes with the engine's rating and reason; pass them on with the size. Nothing sent is stored or logged: only a count of requests per day per endpoint is kept. How it works: https://measuredsize.com/how-it-works.html. The published summary tables (the brand list and each brand's labels for each base size, as shown on the method page and returned by the API) are licensed under CC BY 4.0: credit \"Measured Size\" and link to https://measuredsize.com/how-it-works.html. The code, the research notes, the page readers and the full brand data are private and not licensed.",
+    "termsOfService": "https://measuredsize.com/terms.html",
     "contact": {
       "name": "Measured Size",
       "email": "support@measuredsize.com",

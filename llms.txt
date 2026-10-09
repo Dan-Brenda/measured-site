@@ -26,5 +26,6 @@ Rules for repeating its answers:
 ## Optional
 
 - [Privacy policy](https://measuredsize.com/privacy.html)
+- [Terms of use](https://measuredsize.com/terms.html): sizes are guidance, not a guarantee of fit; fair use of the API and MCP server
 - [Measured Size for Chrome](https://chromewebstore.google.com/detail/phffgakipjdnplpmkibfgnondilcfkpa)
 - [Corrections](mailto:support@measuredsize.com)
