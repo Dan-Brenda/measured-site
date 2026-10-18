@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'sha256-M7jUGdX3CQiImrQ1frnT0L62e/u1cXWhbWPnRgYjGRc='; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta name="description" content="Short answers, with a picture each: no Measured Size button, Safari asking for permission, a card that couldn't read the page, "Not available here", changing your measurements, and reporting a wrong size.">
+<link rel="canonical" href="https://measuredsize.com/help/not-working.html">
+<title>Something's not working | Help</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2248%22%20height%3D%2248%22%20viewBox%3D%220%200%20128%20128%22%3E%0A%20%20%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22116%22%20height%3D%22116%22%20rx%3D%2226%22%20fill%3D%22%23A8556D%22%2F%3E%0A%20%20%3Ctext%20x%3D%2264%22%20y%3D%2279%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2C%20'Times%20New%20Roman'%2C%20serif%22%20font-weight%3D%22700%22%20font-size%3D%2276%22%20fill%3D%22%23FFFDFB%22%3EM%3C%2Ftext%3E%0A%20%20%3Crect%20x%3D%2222%22%20y%3D%2290%22%20width%3D%2284%22%20height%3D%2218%22%20rx%3D%224%22%20fill%3D%22%23FFFDFB%22%2F%3E%3Crect%20x%3D%2228.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2236.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%225%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2244.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2252.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%225%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2260.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2268.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%225%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2276.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2284.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%225%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2292.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%0A%3C%2Fsvg%3E">
+<style>
+:root { --rose: #A8556D; --ink: #2B2420; --soft: #57493F; --muted: #8A7B72; --line: #E6D8D0; --bg: #FFFDFB; --panel: #FFFFFF; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --rose: #E29AAB; --ink: #F3ECE8; --soft: #D9CCC5; --muted: #B3A69E; --line: #4A3E39; --bg: #1E1917; --panel: #29221F; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 -apple-system, "Segoe UI", Arial, sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+header a { color: var(--rose); font: 700 26px Georgia, "Times New Roman", serif; text-decoration: none; }
+h1 { font: 700 34px/1.2 Georgia, "Times New Roman", serif; margin: 8px 0 16px; }
+h2 { font: 700 22px/1.3 Georgia, "Times New Roman", serif; margin: 32px 0 8px; }
+p, li { color: var(--soft); }
+strong { color: var(--ink); }
+a { color: var(--rose); }
+code { font-size: 0.92em; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; }
+.table { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 15px; }
+th, td { border-bottom: 1px solid var(--line); padding: 8px 10px 8px 0; text-align: left; vertical-align: top; }
+th { color: var(--ink); }
+.lead { font-size: 19px; color: var(--ink); }
+footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--rose); outline-offset: 2px; }
+.callout { display: block; margin: 24px 0; padding: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; text-decoration: none; }
+.callout strong { display: block; font: 700 20px/1.3 Georgia, "Times New Roman", serif; color: var(--rose); }
+.callout span { color: var(--soft); }
+
+.crumbs { font-size: 15px; color: var(--muted); margin: 0 0 4px; }
+.notice { margin: 16px 0 24px; padding: 16px; border: 2px solid var(--rose); border-radius: 12px; background: var(--panel); color: var(--ink); font-size: 18px; }
+.notice strong { color: var(--rose); }
+ol.steps { list-style: none; margin: 0; padding: 0; }
+ol.steps > li { position: relative; padding: 0 0 28px 52px; overflow-wrap: break-word; }
+ol.steps .n { position: absolute; left: 0; top: 0; width: 38px; height: 38px; border-radius: 50%; background: var(--rose); color: var(--bg); font: 700 19px/38px Georgia, "Times New Roman", serif; text-align: center; }
+.do { margin: 5px 0 6px; font-size: 19px; line-height: 1.45; font-weight: 600; color: var(--ink); }
+.more { margin: 0 0 10px; }
+.go { margin: 0 0 10px; }
+.button { display: inline-block; background: var(--rose); color: var(--bg); font-weight: 700; padding: 12px 16px; border-radius: 8px; text-decoration: none; }
+figure.shot { margin: 8px 0 0; }
+figure.shot img { display: block; width: 100%; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 12px; background: #FFFFFF; }
+figure.phone img { max-width: 320px; }
+.todo { margin: 8px 0 0; padding: 24px 16px; border: 2px dashed var(--rose); border-radius: 12px; background: var(--panel); color: var(--soft); text-align: center; }
+.todo strong { display: block; color: var(--rose); margin-bottom: 4px; }
+.older { margin: 0 0 28px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); }
+.older h3 { font: 700 19px/1.3 Georgia, "Times New Roman", serif; color: var(--ink); margin: 0 0 6px; }
+.older ol.steps > li { padding-bottom: 20px; }
+.after { font-size: 18px; color: var(--ink); }
+.choices { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin: 16px 0 32px; }
+.choice { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 16px; }
+.choice h2 { margin: 0 0 10px; }
+.choice img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 10px; background: #FFFFFF; margin: 0 0 10px; }
+.choice .button { margin: 4px 8px 0 0; }
+.choice .soon, .waits { color: var(--soft); }
+.qa h2 { margin-top: 36px; }
+.parts { padding-left: 0; list-style: none; }
+.parts > li { margin: 0 0 14px; padding-left: 44px; position: relative; }
+.parts .n { position: absolute; left: 0; top: 0; width: 32px; height: 32px; border-radius: 50%; background: var(--rose); color: var(--bg); font: 700 17px/32px Georgia, "Times New Roman", serif; text-align: center; }
+.parts strong { display: block; color: var(--ink); }
+.ratings dt { color: var(--ink); font-weight: 700; margin-top: 10px; }
+.ratings dd { margin: 2px 0 0; color: var(--soft); }
+.others { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<main>
+<header><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" aria-hidden="true" viewBox="0 0 128 128">
+  <rect x="6" y="6" width="116" height="116" rx="26" fill="#A8556D"/>
+  <text x="64" y="79" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="76" fill="#FFFDFB">M</text>
+  <rect x="22" y="90" width="84" height="18" rx="4" fill="#FFFDFB"/><rect x="28.75" y="94" width="2.5" height="9" fill="#A8556D"/><rect x="36.75" y="94" width="2.5" height="5" fill="#A8556D"/><rect x="44.75" y="94" width="2.5" height="9" fill="#A8556D"/><rect x="52.75" y="94" width="2.5" height="5" fill="#A8556D"/><rect x="60.75" y="94" width="2.5" height="9" fill="#A8556D"/><rect x="68.75" y="94" width="2.5" height="5" fill="#A8556D"/><rect x="76.75" y="94" width="2.5" height="9" fill="#A8556D"/><rect x="84.75" y="94" width="2.5" height="5" fill="#A8556D"/><rect x="92.75" y="94" width="2.5" height="9" fill="#A8556D"/>
+</svg><a href="https://measuredsize.com/">Measured Size</a></header>
+<p class="crumbs"><a href="https://measuredsize.com/help/">Help</a> › Something's not working</p>
+<h1>Something's not working</h1>
+<p class="lead">Short answers to what most often goes wrong. Each has a picture.</p>
+<ul><li><a href="#q1">I don't see the Measured Size button</a></li><li><a href="#q2">Safari asks for permission</a></li><li><a href="#q3">The card says it couldn't read this page</a></li><li><a href="#q4">The card says "Not available here"</a></li><li><a href="#q5">How do I change or delete my measurements?</a></li><li><a href="#q6">How do I report a wrong size?</a></li></ul>
+<div class="qa">
+<h2 id="q1">I don't see the Measured Size button</h2>
+<p>In Chrome on a computer, it may be behind the puzzle-piece button at the top right. Click the puzzle piece, then click the pin (a thumbtack) next to "Measured Size". See the <a href="https://measuredsize.com/help/chrome.html">Chrome steps</a>.</p>
+<p>In Firefox on a computer, click the puzzle piece at the top right, then the three dots next to "Measured Size", then "Pin to Toolbar". See the <a href="https://measuredsize.com/help/firefox.html">Firefox steps</a>.</p>
+<p>On an iPhone or iPad, open the Measured Size app and shop in its Shop tab: it needs no setup. In Safari, Measured Size is in Safari's menu once it is switched on in Settings: see the <a href="https://measuredsize.com/help/iphone.html">iPhone</a> or <a href="https://measuredsize.com/help/ipad.html">iPad</a> steps.</p>
+<p>On an Android phone, it is in Firefox's menu, under "Extensions". It is not in Chrome: see the <a href="https://measuredsize.com/help/android.html">Android</a> steps.</p>
+<figure class="shot"><img src="img/help-no-button.webp" width="740" height="420" alt="Chrome's Extensions list from the puzzle-piece button, with Measured Size in it and the pin beside it outlined." loading="lazy" decoding="async"></figure>
+<h2 id="q2">Safari asks for permission</h2>
+<p>Safari asks before an extension can see a website. Tap "Always Allow…", then "Always Allow on This Website". Measured Size reads the listing only to show your size, and sends nothing anywhere.</p>
+<p>Allowing gap.com and target.com in Settings first saves the question there: see "Allow it on two stores" in the <a href="https://measuredsize.com/help/iphone.html">iPhone</a> or <a href="https://measuredsize.com/help/ipad.html">iPad</a> steps.</p>
+<figure class="shot"><img src="img/help-safari-asks.webp" width="600" height="500" alt="Safari asking whether Measured Size may access oldnavy.gap.com, with &quot;Always Allow…&quot; outlined." loading="lazy" decoding="async"></figure>
+<h2 id="q3">The card says it couldn't read this page</h2>
+<p>It says "Couldn't read this page" or "Couldn't read this listing", and shows your size from your measurements alone instead. On a page of search results, a category or a store's front page, it says "Open a bra to see your size."</p>
+<p>Open one bra's own page, not a page of search results. Let the page finish loading, then open Measured Size again. On an Android phone, the second time usually works.</p>
+<figure class="shot"><img src="img/help-could-not-read.webp" width="600" height="517" alt="A Measured Size card that says &quot;Couldn't read this page. Showing your base size instead.&quot;, with the base size under it." loading="lazy" decoding="async"></figure>
+<h2 id="q4">The card says "Not available here"</h2>
+<p>This store doesn't sell your size in this bra right now. The card names the closest size it does have in stock, and how it differs from yours. "Why not available?" says more.</p>
+<p>When your sister size is in stock, the card shows that instead, and says so. You can try the closest size, look at another bra, or try another store. Measured Size says so rather than guess.</p>
+<figure class="shot"><img src="img/help-not-available.webp" width="536" height="724" alt="A Measured Size card: &quot;Your size&quot; 34G greyed, then &quot;Closest in stock: 36DD, one band size larger, cups one size smaller.&quot; and &quot;Not available here&quot;." loading="lazy" decoding="async"></figure>
+<h2 id="q5">How do I change or delete my measurements?</h2>
+<p>In the extension, open Measured Size, click or tap "More" at the bottom of the card, then "Edit measurements". Type the new numbers and click or tap "Save measurements".</p>
+<p>To delete everything Measured Size saved, click or tap "Delete my saved data" at the bottom of the same screen. It changes to "Press again to delete everything Measured Size saved": click or tap it again.</p>
+<p>In the iPhone and iPad app, tap "Update measurements" on Home. The app and Measured Size in Safari share the same measurements: change or delete them in one, and the other follows.</p>
+<figure class="shot"><img src="img/help-delete.webp" width="600" height="767" alt="Measured Size's measurements screen after the first press: &quot;Press again to delete everything Measured Size saved&quot; is outlined at the bottom." loading="lazy" decoding="async"></figure>
+<h2 id="q6">How do I report a wrong size?</h2>
+<p>At the bottom of the card, open "More", then "Report a wrong size". Tick "Add my measurements" only if you want them in the email. Then click or tap "Write the email".</p>
+<p>It opens an email to support@measuredsize.com in your own email app, with the listing's address, the size shown and your browser's name. Nothing is sent until you send it. On a card with no size, "Report a problem" is right on the card.</p>
+<figure class="shot"><img src="img/help-report.webp" width="600" height="193" alt="The bottom of the card, &quot;Report a wrong size&quot; opened: the &quot;Add my measurements&quot; box and &quot;Write the email&quot; are outlined." loading="lazy" decoding="async"></figure>
+</div>
+<p class="others">Other guides: <a href="https://measuredsize.com/help/chrome.html">Chrome</a> · <a href="https://measuredsize.com/help/firefox.html">Firefox</a> · <a href="https://measuredsize.com/help/iphone.html">iPhone</a> · <a href="https://measuredsize.com/help/ipad.html">iPad</a> · <a href="https://measuredsize.com/help/android.html">Android phone</a> · <a href="https://measuredsize.com/help/not-working.html">Something's not working</a> · <a href="https://measuredsize.com/help/reading-the-card.html">Reading the card</a></p>
+<footer><a href="https://measuredsize.com/">Measured Size</a> · <a href="https://measuredsize.com/bra-size-calculator.html">Bra size calculator</a> · <a href="https://measuredsize.com/how-it-works.html">How it works</a> · <a href="https://measuredsize.com/privacy.html">Privacy policy</a> · <a href="https://measuredsize.com/terms.html">Terms of use</a> · <a href="https://measuredsize.com/help/">Help</a></footer>
+</main>
+</body>
+</html>
