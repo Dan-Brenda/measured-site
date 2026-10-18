@@ -439,7 +439,7 @@
                             },
                             "badge": {
                               "type": "string",
-                              "description": "The words the card shows for the rating: Best Match, Strong Match, Possible Match, Limited Data; Not carried here, Not on their chart, Between chart sizes, Beyond our range."
+                              "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; Not carried here, Not on their chart, Between chart sizes, Outside standard sizes."
                             },
                             "refused": {
                               "type": "boolean"
@@ -628,7 +628,7 @@
                             },
                             "badge": {
                               "type": "string",
-                              "description": "The words the card shows for the rating: Best Match, Strong Match, Possible Match, Limited Data; Not carried here, Not on their chart, Between chart sizes, Beyond our range."
+                              "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; Not carried here, Not on their chart, Between chart sizes, Outside standard sizes."
                             },
                             "refused": {
                               "type": "boolean"
@@ -708,7 +708,7 @@
     "/v1/translate": {
       "get": {
         "summary": "A known size at one brand, at another",
-        "description": "Reads her band and cup label at from_brand back to Measured Size's base size through that brand's recorded labels, then gives to_brand's label for it. Rated no higher than Possible Match, since a label says less than measurements. Refuses a letter size, a label the brand's record doesn't give, or one that several sizes give.",
+        "description": "Reads her band and cup label at from_brand back to Measured Size's base size through that brand's recorded labels, then gives to_brand's label for it. Rated no higher than Good Match, since a label says less than measurements. Refuses a letter size, a label the brand's record doesn't give, or one that several sizes give.",
         "operationId": "translateSize",
         "parameters": [
           {
@@ -842,7 +842,7 @@
       },
       "post": {
         "summary": "A known size at one brand, at another (JSON body)",
-        "description": "Reads her band and cup label at from_brand back to Measured Size's base size through that brand's recorded labels, then gives to_brand's label for it. Rated no higher than Possible Match, since a label says less than measurements. Refuses a letter size, a label the brand's record doesn't give, or one that several sizes give.",
+        "description": "Reads her band and cup label at from_brand back to Measured Size's base size through that brand's recorded labels, then gives to_brand's label for it. Rated no higher than Good Match, since a label says less than measurements. Refuses a letter size, a label the brand's record doesn't give, or one that several sizes give.",
         "operationId": "translateSizePost",
         "requestBody": {
           "required": false,
@@ -1057,7 +1057,7 @@
           },
           "badge": {
             "type": "string",
-            "description": "The words the card shows for the rating: Best Match, Strong Match, Possible Match, Limited Data; Not carried here, Not on their chart, Between chart sizes, Beyond our range."
+            "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; Not carried here, Not on their chart, Between chart sizes, Outside standard sizes."
           },
           "refused": {
             "type": "boolean"
