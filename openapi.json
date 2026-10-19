@@ -435,11 +435,11 @@
                             },
                             "rating": {
                               "type": "string",
-                              "description": "The engine's rating: Great match, Good match, Likely fits, Uncertain, check size chart; or a refusal: Outside this brand's range, Not on this brand's chart, Between this brand's chart rows, Beyond supported sizes."
+                              "description": "The rating, in the same words as badge."
                             },
                             "badge": {
                               "type": "string",
-                              "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; Not carried here, Not on their chart, Between chart sizes, Outside standard sizes."
+                              "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; or, where it gives no size, Not carried here, Not on their chart, Between chart sizes, Outside standard sizes."
                             },
                             "refused": {
                               "type": "boolean"
@@ -624,11 +624,11 @@
                             },
                             "rating": {
                               "type": "string",
-                              "description": "The engine's rating: Great match, Good match, Likely fits, Uncertain, check size chart; or a refusal: Outside this brand's range, Not on this brand's chart, Between this brand's chart rows, Beyond supported sizes."
+                              "description": "The rating, in the same words as badge."
                             },
                             "badge": {
                               "type": "string",
-                              "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; Not carried here, Not on their chart, Between chart sizes, Outside standard sizes."
+                              "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; or, where it gives no size, Not carried here, Not on their chart, Between chart sizes, Outside standard sizes."
                             },
                             "refused": {
                               "type": "boolean"
@@ -1053,11 +1053,11 @@
           },
           "rating": {
             "type": "string",
-            "description": "The engine's rating: Great match, Good match, Likely fits, Uncertain, check size chart; or a refusal: Outside this brand's range, Not on this brand's chart, Between this brand's chart rows, Beyond supported sizes."
+            "description": "The rating, in the same words as badge."
           },
           "badge": {
             "type": "string",
-            "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; Not carried here, Not on their chart, Between chart sizes, Outside standard sizes."
+            "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; or, where it gives no size, Not carried here, Not on their chart, Between chart sizes, Outside standard sizes."
           },
           "refused": {
             "type": "boolean"
