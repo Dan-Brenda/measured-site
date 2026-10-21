@@ -32,6 +32,7 @@ const POSSIBLE_INCHES = freeze({ bust: freeze([22, 75]), underbust: freeze([18, 
 const CHART_ROW_LIMITS_INCHES = freeze({ underbust: freeze([20, 62]), bust: freeze([24, 72]) });
 const CHART_ROW_WIDEST_RANGE_INCHES = 10;
 const NEAR_EDGE_POSITION = 0.6;
+const EDGE_OF_SIZE_INCHES = 0.25;
 const TIER_SCORE_CENTRED = 0.9;
 const TIER_SCORE_COMFORTABLE = 0.75;
 const TIER_SCORE_POSSIBLE = 0.4;
@@ -55,7 +56,7 @@ MAX_CANDIDATES, CATEGORY_ORDER, MAX_BAND_SUBSTITUTION_STEPS, MAX_SUBSTITUTE_INCH
 RATING_LADDER, RATING_GATE_MIN_KEYS,
 WIDE_RANGE_INCHES, WIDE_RANGE_PENALTY, AMBIGUITY_PENALTY, NEAR_MISS_TOLERANCE_INCHES, NEAR_MISS_EDGE_POSITION, NEAR_MISS_DECAY,
 NEAR_MISS_SCORE_CEILING, EXACT_MATCH_FLOOR, LIST_SISTER_POSITION, SINGLE_VALUE_REACH_INCHES, PLAUSIBLE_INCHES, POSSIBLE_INCHES,
-CHART_ROW_LIMITS_INCHES, CHART_ROW_WIDEST_RANGE_INCHES, NEAR_EDGE_POSITION, TIER_SCORE_CENTRED, TIER_SCORE_COMFORTABLE,
+CHART_ROW_LIMITS_INCHES, CHART_ROW_WIDEST_RANGE_INCHES, NEAR_EDGE_POSITION, EDGE_OF_SIZE_INCHES, TIER_SCORE_CENTRED, TIER_SCORE_COMFORTABLE,
 TIER_SCORE_POSSIBLE, CHART_DETAIL_POSITION, SCORE_TOLERANCE,
 CM_PER_INCH, CHART_CM_FROM, CHART_INCHES_TO, CHART_LIST_SHARE, PAGE_SIZE_CHART_LIMIT, PAGE_CHART_MIN_ROWS, PAGE_CHART_MAX_ROWS,
 MIN_BUCKETS_FOR_A_USABLE_CHART,
@@ -1163,8 +1164,8 @@ const centeredness = center === 0 ? 1 : 1 - Math.abs(sortedIdx - center) / cente
 const position = _cmSettle(EXACT_MATCH_FLOOR + centeredness * (1 - EXACT_MATCH_FLOOR));
 return { position, matchType: 'exact' };
 }
-const sisterHit = (measurements.sisterPairs || []).some((p) => bucket.pairs.includes(p));
-if (sisterHit) return { position: _cmK.LIST_SISTER_POSITION, matchType: 'sister' };
+const sisterHit = (measurements.sisterPairs || []).find((p) => bucket.pairs.includes(p));
+if (sisterHit) return { position: _cmK.LIST_SISTER_POSITION, matchType: 'sister', sisterPair: sisterHit };
 return null;
 }
 function singleValuesAsRanges(buckets) {
@@ -1252,7 +1253,16 @@ const r = (bucket && bucket.ranges) || {};
 const mid = (range) => (Array.isArray(range) && range.length === 2 ? (Number(range[0]) + Number(range[1])) / 2 : 0);
 return mid(r.underbust) + mid(r.bust);
 }
-function matchMeasurementsToChart(measurements, rawBuckets, options) {
+function chartForHer(measurements, buckets) {
+if (!Array.isArray(buckets)) return buckets;
+const lists = buckets.filter((b) => b && !b.ranges && Array.isArray(b.pairs));
+const measured = buckets.filter((b) => b && b.ranges && (b.ranges.underbust || b.ranges.bust));
+if (!lists.length || !measured.length) return buckets;
+const pair = measurements ? `${measurements.band}${measurements.cup}` : null;
+return lists.some((b) => b.pairs.includes(pair)) ? lists : measured;
+}
+function matchMeasurementsToChart(measurements, allBuckets, options) {
+const rawBuckets = chartForHer(measurements, allBuckets);
 const plausibility = chartPlausibility(rawBuckets);
 if (!plausibility.plausible) {
 return { matched: false, bucket: null, dimensionPositions: null, rangeWidths: {}, matchType: null, pairMatchType: null, ambiguous: false, implausibleChart: true, note: `This chart is not used: ${plausibility.reason}.` };
@@ -1285,7 +1295,8 @@ candidates.push({ bucket, dimensionPositions: dims, rangeWidths: widths, matchTy
 } else if (bucket.pairs) {
 const pairResult = _pairPosition(measurements, bucket);
 if (!pairResult) continue;
-candidates.push({ bucket, dimensionPositions: { pair: pairResult.position }, rangeWidths: {}, matchType: 'pair', pairMatchType: pairResult.matchType });
+candidates.push({ bucket, dimensionPositions: { pair: pairResult.position }, rangeWidths: {}, matchType: 'pair', pairMatchType: pairResult.matchType,
+...(pairResult.sisterPair ? { sisterListed: pairResult.sisterPair } : {}) });
 }
 }
 if (candidates.length === 0) {
@@ -1364,6 +1375,7 @@ dimensionPositions: best.dimensionPositions,
 rangeWidths: best.rangeWidths,
 matchType: best.matchType,
 pairMatchType: best.pairMatchType,
+...(best.sisterListed ? { sisterListed: best.sisterListed } : {}),
 ...(tiedWith ? { tiedWith: tiedWith.bucket.label } : {}),
 ambiguous: sizesHolding > 1,
 note: sizesHolding > 1 ? 'These measurements fall within more than one size bucket on this chart.' : '',
@@ -1386,7 +1398,7 @@ function _midpoint(range) {
 return (range[0] + range[1]) / 2;
 }
 function boundaryAlternate(measurements, rawBuckets, matchResult) {
-const buckets = singleValuesAsRanges(rawBuckets);
+const buckets = singleValuesAsRanges(chartForHer(measurements, rawBuckets));
 if (!measurements || !Array.isArray(buckets) || !matchResult || !matchResult.matched || !matchResult.bucket) return null;
 const matched = matchResult.bucket;
 const compound = (label) => String(label || '').includes('/');
@@ -1404,7 +1416,8 @@ if (labels.length !== 1) return null;
 const from = _letterPlace(matched.label);
 const to = _letterPlace(labels[0]);
 if (!from || !to || from.run !== to.run || from.at === to.at) return null;
-return { label: labels[0], direction: to.at > from.at ? 'up' : 'down' };
+const listed = exact.length ? pair : sisters.find((p) => pool.some((b) => (b.pairs || []).includes(p)));
+return { label: labels[0], direction: to.at > from.at ? 'up' : 'down', ...(listed ? { pair: listed } : {}) };
 }
 if (!matched.ranges || !matchResult.dimensionPositions) return null;
 const positions = matchResult.dimensionPositions;
@@ -1493,6 +1506,7 @@ if (typeof module !== 'undefined' && module.exports) {
 module.exports = {
 NON_RATING_LEGEND,
 matchMeasurementsToChart,
+chartForHer,
 singleValuesAsRanges,
 chartPlausibility,
 usableListingChart,
@@ -1820,6 +1834,7 @@ const _saMatchMeasurementsToChart = _saChartMatcher ? _saChartMatcher.matchMeasu
 const _saGetChartConfidence = _saChartMatcher ? _saChartMatcher.getChartConfidence : getChartConfidence;
 const _saChartQualityFor = _saChartMatcher ? _saChartMatcher.chartQualityFor : chartQualityFor;
 const _saBoundaryAlternate = _saChartMatcher ? _saChartMatcher.boundaryAlternate : boundaryAlternate;
+const _saChartForHer = _saChartMatcher ? _saChartMatcher.chartForHer : chartForHer;
 const _saChartMissPhrase = _saChartMatcher ? _saChartMatcher.chartMissPhrase : chartMissPhrase;
 const _saGetSisterSizes = _saFitEngine ? _saFitEngine.getSisterSizes : getSisterSizes;
 const _saCalculateSize = _saFitEngine ? _saFitEngine.calculateSize : calculateSize;
@@ -3074,6 +3089,7 @@ matchDetail: {
 type: 'chartMatch',
 matchType: matchResult.matchType,
 pairMatchType: matchResult.pairMatchType,
+...(matchResult.sisterListed ? { sisterListed: matchResult.sisterListed } : {}),
 dimensionPositions: matchResult.dimensionPositions,
 chartScore,
 ambiguousChart: matchResult.ambiguous,
@@ -3088,7 +3104,7 @@ baseCup: chartMeasurements.cup,
 ...(pastChartEdge ? { pastChartEdge } : {}),
 },
 },
-alphaSequence: listingBuckets.map((b) => b.label),
+alphaSequence: [...new Set(_saChartForHer(chartMeasurements, listingBuckets).map((b) => b.label))],
 fitInstructionNote: fitInstructionNote.trim() || null,
 styleAttributeNote: attributeNote || null,
 };
@@ -4369,27 +4385,41 @@ return { ok: true, handle, variantCount: variants.length, variantsPerSize, madeP
 }
 function readShopifyColourStock(json, handle, brandEntry, variantId, pageColour) {
 if (!json || typeof json !== 'object' || json.handle !== handle) return { ok: false, reason: 'handle-mismatch' };
-if (!variantId) return { ok: false, reason: 'no-variant-in-the-address' };
 const variants = Array.isArray(json.variants) ? json.variants : [];
 const options = Array.isArray(json.options) ? json.options : [];
+const colourAt = options.map((o, i) => (/^(colou?r|shade)$/i.test(String((o && o.name) || '').trim()) ? i : -1)).filter((i) => i !== -1);
+const chosen = typeof pageColour === 'string' ? pageColour.trim() : '';
+let shown = '';
+let by = 'address';
+if (variantId) {
 const variant = variants.find((v) => v && String(v.id) === String(variantId));
 if (!variant || !Array.isArray(variant.options)) return { ok: false, reason: 'variant-not-in-the-product' };
-const colourAt = options.map((o, i) => (/^(colou?r|shade)$/i.test(String((o && o.name) || '').trim()) ? i : -1)).filter((i) => i !== -1);
 if (colourAt.length !== 1) return { ok: false, reason: 'no-single-colour-option' };
-const at = colourAt[0];
-const shown = String(variant.options[at] || '').trim();
-if (!shown || typeof pageColour !== 'string' || pageColour.trim().toLowerCase() !== shown.toLowerCase()) {
+shown = String(variant.options[colourAt[0]] || '').trim();
+if (!shown || !chosen || chosen.toLowerCase() !== shown.toLowerCase()) {
 return { ok: false, reason: "the page's chosen colour does not confirm the address's variant" };
 }
+} else {
+if (!chosen) return { ok: false, reason: 'no-variant-in-the-address-and-no-one-chosen-colour' };
+if (colourAt.length !== 1) return { ok: false, reason: 'no-single-colour-option' };
+const named = variants.find((v) => v && Array.isArray(v.options) && String(v.options[colourAt[0]] || '').trim().toLowerCase() === chosen.toLowerCase());
+if (!named) return { ok: false, reason: "the page's chosen colour is not one the product's record names" };
+shown = String(named.options[colourAt[0]]).trim();
+by = 'swatch';
+}
+const at = colourAt[0];
+const ofColour = (colour) => variants.filter((v) => String((v && v.options && v.options[at]) || '').trim().toLowerCase() === colour.toLowerCase());
 const colours = [];
 const values = [...new Set(variants.map((v) => String((v && v.options && v.options[at]) || '').trim()).filter(Boolean))];
 for (const colour of values) {
 if (colour.toLowerCase() === shown.toLowerCase()) continue;
-const read = readShopifyVariantFeed({ ...json, variants: variants.filter((v) => String((v.options || [])[at] || '').trim() === colour) }, handle, brandEntry);
+const read = readShopifyVariantFeed({ ...json, variants: ofColour(colour) }, handle, brandEntry);
 if (!read.ok) return { ok: false, reason: `another colour could not be read: ${read.reason}` };
 colours.push({ colour, pairs: read.madePairs.filter((pair) => !read.soldOutPairs.includes(pair)) });
 }
-return { ok: true, shown, colours };
+const own = readShopifyVariantFeed({ ...json, variants: ofColour(shown) }, handle, brandEntry);
+const shownStock = own.ok ? { madePairs: own.madePairs, soldOutPairs: own.soldOutPairs, variantsPerSize: own.variantsPerSize } : null;
+return { ok: true, shown, by, colours, shownStock };
 }
 function _svfHalfPairFacts(byHalfPair) {
 if (!byHalfPair.size) return {};
@@ -4526,6 +4556,112 @@ if (pair) pairs.add(pair);
 }
 return { ok: true, inStockPairs: [...pairs].sort(), variantCount };
 }
+function readAvailableSizesScripts(texts, pageCode, brandEntry) {
+const code = String(pageCode || '').trim().toUpperCase();
+if (!code) return { ok: false, reason: 'no-product-code-in-the-address' };
+const objects = [];
+(texts || []).forEach((text) => {
+const source = String(text || '');
+const marker = /(?:ACC\.productAvailableSizes|const\s+sizesAvailability)\s*=\s*\{/g;
+let m;
+while ((m = marker.exec(source))) {
+const start = m.index + m[0].length - 1;
+let depth = 0;
+let inString = false;
+let end = -1;
+for (let i = start; i < source.length; i += 1) {
+const ch = source[i];
+if (inString) { if (ch === '\\') i += 1; else if (ch === '"') inString = false; continue; }
+if (ch === '"') inString = true;
+else if (ch === '{') depth += 1;
+else if (ch === '}') { depth -= 1; if (depth === 0) { end = i; break; } }
+}
+if (end === -1) continue;
+try { objects.push(JSON.parse(source.slice(start, end + 1))); } catch (err) { }
+}
+});
+if (!objects.length) return { ok: false, reason: 'no-available-sizes-on-the-page' };
+const reads = [];
+for (const data of objects) {
+const grouped = data && data.sizesGroupedByBackSize;
+if (!grouped || typeof grouped !== 'object' || !Array.isArray(data.cupSizes)) continue;
+const cells = [];
+Object.keys(grouped).forEach((band) => Object.keys(grouped[band] || {}).forEach((cup) => cells.push({ band, cup, v: grouped[band][cup] || {} })));
+if (!cells.length || cells.some((c) => !String(c.v.productCode || '').toUpperCase().startsWith(code))) continue;
+const unread = (cup) => _svfIsUnreadLabel(String(cup).trim().toUpperCase(), brandEntry) || /^[P-Z]$/.test(String(cup).trim().toUpperCase());
+if (data.cupSizes.some((cup) => !unread(cup) && !_svfReadCup(String(cup).trim().toUpperCase(), brandEntry))) continue;
+const made = new Set();
+const inStock = new Set();
+let unreadable = false;
+cells.forEach((c) => {
+if (unread(c.cup)) return;
+const pair = _svfReadBandCup(`${String(c.band).trim()}${String(c.cup).trim().toUpperCase()}`, brandEntry);
+if (!pair) { unreadable = true; return; }
+made.add(pair);
+if (/^(inStock|lowStock)$/.test(String(c.v.stockLevelStatus || '')) && !(Number(c.v.stockLevel) <= 0)) inStock.add(pair);
+});
+if (unreadable) continue;
+reads.push({ madePairs: [...made].sort(), inStockPairs: [...inStock].sort() });
+}
+if (!reads.length) return { ok: false, reason: 'no-copy-for-this-product-in-the-letters-shown' };
+const key = (r) => `${r.madePairs.join(',')}|${r.inStockPairs.join(',')}`;
+if (reads.some((r) => key(r) !== key(reads[0]))) return { ok: false, reason: 'copies-disagree' };
+return { ok: true, madePairs: reads[0].madePairs, inStockPairs: reads[0].inStockPairs, copies: reads.length };
+}
+function readOptionDefsSkuStock(product, colour, brandEntry) {
+if (!product || !Array.isArray(product.optionDefs) || !Array.isArray(product.skus)) return { ok: false, reason: 'no-records' };
+if (typeof colour !== 'string' || !colour.trim()) return { ok: false, reason: 'no-colour-on-screen' };
+const defs = new Map(product.optionDefs.filter((o) => o && o.id != null).map((o) => [String(o.id), o]));
+const want = colour.trim().toUpperCase();
+if (![...defs.values()].some((o) => o.type === 'Color' && String(o.label || '').trim().toUpperCase() === want)) return { ok: false, reason: 'colour-not-in-the-product-data' };
+const made = new Set();
+const inStock = new Set();
+let variantCount = 0;
+for (const sku of product.skus) {
+const opts = (sku && Array.isArray(sku.options) ? sku.options : []).map((id) => defs.get(String(id))).filter(Boolean);
+const of = (type) => { const o = opts.find((x) => x.type === type); return o ? String(o.label || '').trim().toUpperCase() : null; };
+if (of('Color') !== want) continue;
+variantCount += 1;
+const band = of('Band Size');
+const cup = of('Cup Size');
+if (!band || !cup) return { ok: false, reason: 'a-size-is-not-band-and-cup' };
+if (_svfIsHalfCup(cup) || _svfIsUnreadLabel(cup, brandEntry)) continue;
+const pair = _svfReadBandCup(`${band}${cup}`, brandEntry);
+if (!pair) return { ok: false, reason: 'unreadable-sizes' };
+made.add(pair);
+if (sku.inventory && sku.inventory.inStock === true) inStock.add(pair);
+}
+if (!variantCount) return { ok: false, reason: 'no-size-in-the-colour-on-screen' };
+return { ok: true, madePairs: [...made].sort(), inStockPairs: [...inStock].sort(), variantCount };
+}
+function productRecordFromScript(text) {
+let source = String(text || '');
+if (source.indexOf('optionDefs') === -1) return null;
+const pushed = source.match(/self\.__next_f\.push\(\[1,("(?:[^"\\]|\\.)*")\]\)/s);
+if (pushed) { try { source = JSON.parse(pushed[1]); } catch (err) { return null; } }
+const at = source.indexOf('"optionDefs"');
+const key = source.lastIndexOf('"product":{', at);
+if (at === -1 || key === -1) return null;
+const start = key + '"product":'.length;
+let depth = 0;
+let quoted = false;
+for (let i = start; i < source.length; i += 1) {
+const ch = source[i];
+if (quoted) { if (ch === '\\') i += 1; else if (ch === '"') quoted = false; continue; }
+if (ch === '"') quoted = true;
+else if (ch === '{') depth += 1;
+else if (ch === '}') {
+depth -= 1;
+if (depth === 0) {
+try {
+const record = JSON.parse(source.slice(start, i + 1));
+return record && Array.isArray(record.optionDefs) && Array.isArray(record.skus) ? record : null;
+} catch (err) { return null; }
+}
+}
+}
+return null;
+}
 function readVariationHierarchyPairs(hierarchy, page, brandEntry) {
 if (!Array.isArray(hierarchy) || !hierarchy.length) return { ok: false, reason: 'no-hierarchy' };
 const levelOf = (name) => {
@@ -4627,6 +4763,8 @@ availableBands: bands.length ? bands : grid.availableBands,
 availableCups: cups.length ? cups : grid.availableCups,
 availablePairs,
 stockShownPairs: [...shown].filter((pair) => made.has(pair)).sort(),
+madeInColour: read.madePairs.slice().sort(),
+...(read.colour ? { colourShown: read.colour } : {}),
 };
 if (soldOut.size) out.soldOutPairs = [...soldOut].sort();
 return { grid: out, applied: true, reason: 'the combinations the listing makes, stock where a chip shows it' };
@@ -4642,7 +4780,7 @@ return { grid: { ...grid, availablePairs: pairs }, applied: true, reason: 'combi
 }
 function applyVariantFeedStockPairs(grid, feed, hostConfig) {
 const unchanged = (reason) => ({ grid, applied: false, reason });
-const takesPairsFromList = !!hostConfig && hostConfig.variantFeedStockPairs === true;
+const takesPairsFromList = (!!hostConfig && hostConfig.variantFeedStockPairs === true) || (!!feed && feed.storeList === true);
 const pairsRequired = !!hostConfig && hostConfig.stockPairsRequired === true;
 if (!takesPairsFromList && !pairsRequired) return unchanged('this store is not declared to take its stock pairs from its own list');
 if (!grid || grid.splitSelector !== true || grid.availablePairs != null) return unchanged('the size grid is not a split band and cup selector without pairs');
@@ -4680,6 +4818,9 @@ isShopifyStorefront,
 shopifyFeedPath,
 readShopifyVariantFeed,
 readShopifyColourStock,
+readAvailableSizesScripts,
+readOptionDefsSkuStock,
+productRecordFromScript,
 readKeyedListedSizes,
 readVariationHierarchyPairs,
 readVariationHierarchySizes,
@@ -4851,7 +4992,7 @@ return {
 status: 'out-of-range',
 trueSize,
 candidates: [],
-note: "Nothing on this listing is in stock right now, in the colour shown.",
+note: "Nothing on this listing is in stock right now, in the color shown.",
 nothingInStock: true,
 };
 }
@@ -4861,7 +5002,7 @@ availableBands: [...new Set([...((grid && grid.availableBands) || []), ..._pairL
 availableCups: [...new Set([...((grid && grid.availableCups) || []), ..._pairList.map((m) => m[2])])].filter((c) => _szCupLetters.includes(c)),
 };
 const pageOffers = !!grid && ((Array.isArray(grid.offeredPairs) && grid.offeredPairs.length > 0) || (Array.isArray(grid.offeredBands) && grid.offeredBands.length > 0) || (Array.isArray(grid.soldOutPairs) && grid.soldOutPairs.length > 0));
-const nothingShownInStock = { status: 'out-of-range', trueSize, candidates: [], note: 'No size on this listing is shown in stock in the colour shown.', nothingInStock: true, nothingInStockFrom: 'page' };
+const nothingShownInStock = { status: 'out-of-range', trueSize, candidates: [], note: 'No size on this listing is shown in stock in the color shown.', nothingInStock: true, nothingInStockFrom: 'page' };
 if (cleanGrid.availableBands.length === 0 || cleanGrid.availableCups.length === 0) {
 if (pageOffers) return nothingShownInStock;
 return {
@@ -5211,11 +5352,19 @@ const left = Array.isArray(grid.offeredCups) && grid.offeredCups.length ? ofCups
 if (left && grid.offeredCupsUnread === true && left.past !== 'below') return null;
 return left;
 }
+function rowsConfirmed(grid) {
+if (!grid || grid.splitSelector !== true || grid.cupRowBand == null || !Array.isArray(grid.cupRowCups)) return [];
+return grid.cupRowCups.filter(Boolean).map((cup) => `${grid.cupRowBand}${cup}`);
+}
 function closestOnRows(size, grid, madeSizes) {
 if (!size || !grid) return null;
 const bands = Array.isArray(grid.offeredBands) && grid.offeredBands.length ? grid.offeredBands : (grid.availableBands || []);
 const cups = Array.isArray(grid.offeredCups) && grid.offeredCups.length ? grid.offeredCups : (grid.availableCups || []);
-const made = (Array.isArray(madeSizes) ? madeSizes : []).map((s) => String(s).replace(/\s+/g, '').toUpperCase()).filter((s) => /^\d{2}[A-Z]+$/.test(s));
+let made = (Array.isArray(madeSizes) ? madeSizes : []).map((s) => String(s).replace(/\s+/g, '').toUpperCase()).filter((s) => /^\d{2}[A-Z]+$/.test(s));
+if (!made.length && grid.cupRowFollowsBand === true) {
+made = rowsConfirmed(grid);
+if (!made.length) return null;
+}
 const rows = { availableBands: bands, availableCups: cups, ...(made.length ? { availablePairs: made } : {}),
 ...(Array.isArray(grid.soldOutPairs) ? { soldOutPairs: grid.soldOutPairs } : {}) };
 const found = findAvailableReadableSize({ band: size.band, cup: size.cup }, rows);
@@ -5247,7 +5396,7 @@ return (found.sisterSizes || []).filter((c) => !marksNamePairs || stated.has(c.l
 let _szAlphaLazy = null;
 const _szAlphaLazyModule = () => (_szAlphaLazy || (_szAlphaLazy = require('./alphaSizeAvailability')));
 if (typeof module !== 'undefined' && module.exports) {
-module.exports = { splitRowsWithoutPairs, rowsLeaveOut, closestOnRows, sistersOnRows, bandOnlyStock, readListingCupRange, withStockShown, halfCupSizeFor, halfCupShown, findAvailableSize, findUnmadeListingSize, unreadCupsNearSize, MAX_BAND_SUBSTITUTION_STEPS, MAX_SUBSTITUTE_INCHES, MAX_SAME_BAND_CUP_STEPS, bandStepCost, cheapestInStock, sizeGridPairsReadable, classifyRelation, rateCandidateConfidence, substituteRatingCeiling, ratingCeiling, capRating, ratingForSizeShown, substituteGap, otherColourAvailability, RATING_LADDER, noteForRelation, selectAlternateCandidates, gridMatchConfidence };
+module.exports = { splitRowsWithoutPairs, rowsLeaveOut, rowsConfirmed, closestOnRows, sistersOnRows, bandOnlyStock, readListingCupRange, withStockShown, halfCupSizeFor, halfCupShown, findAvailableSize, findUnmadeListingSize, unreadCupsNearSize, MAX_BAND_SUBSTITUTION_STEPS, MAX_SUBSTITUTE_INCHES, MAX_SAME_BAND_CUP_STEPS, bandStepCost, cheapestInStock, sizeGridPairsReadable, classifyRelation, rateCandidateConfidence, substituteRatingCeiling, ratingCeiling, capRating, ratingForSizeShown, substituteGap, otherColourAvailability, RATING_LADDER, noteForRelation, selectAlternateCandidates, gridMatchConfidence };
 }
 /* src/alphaSizeAvailability.js */
 const _asaK = (typeof module !== 'undefined' && module.exports) ? require('./sizingConstants') : SIZING_CONSTANTS;
@@ -5741,6 +5890,7 @@ return 'Fair Match';
 }
 const BADGE_NAMES_BEFORE_430 = Object.freeze({ 'Possible Match': 'Good Match', 'Limited Data': 'Fair Match', 'Beyond our range': 'Outside standard sizes' });
 const STOCK_NOT_CHECKED_LINE = 'Check stock when you pick your size';
+const NOT_MADE_HERE_LABEL = 'Not made here';
 function currentBadgeName(name) {
 return (name && Object.prototype.hasOwnProperty.call(BADGE_NAMES_BEFORE_430, name)) ? BADGE_NAMES_BEFORE_430[name] : name;
 }
@@ -5829,37 +5979,52 @@ const equally = tiedWith ? `${bucketLabel} and ${tiedWith} are equally close` : 
 const missPhrase = nearestMatch ? _bcChartMissPhrase(matchDetail.nearestMisses) : null;
 if (nearestMatch && missPhrase) {
 return nudge
-? `Your measurements fall between ${bucketLabel} and ${alternate.label} on this retailer's own chart, outside both, so it can't reliably place you in either. ${equally || `${bucketLabel} is the closer`}: ${missPhrase}. ${nudge}`
+? `Your measurements fall between ${bucketLabel} and ${alternate.label} on this retailer's own chart, outside both. ${equally || `${bucketLabel} is the closer fit`}: ${missPhrase}. ${nudge}`
 : `Your measurements fall outside every size on this retailer's own chart, so it can't reliably place you in one. ${equally || `The closest is ${bucketLabel}`}: ${missPhrase}.`;
 }
 if (nearestMatch) {
 if (limited) {
 return nudge
-? `Your measurements fall between ${bucketLabel} and ${alternate.label} on this retailer's own chart, so it can't reliably place you in either. ${equally || `${bucketLabel} is the closer`}. ${nudge}`
+? `Your measurements fall between ${bucketLabel} and ${alternate.label} on this retailer's own chart. ${equally || `${bucketLabel} is the closer fit`}. ${nudge}`
 : `Your measurements fall between sizes on this retailer's own chart, so it can't reliably place you in one. ${equally || `${bucketLabel} is the closest`}.`;
 }
 return nudge
 ? `Your measurements fall between ${bucketLabel} and ${alternate.label} on this retailer's own chart, and ${equally || `${bucketLabel} is the closer`}. ${nudge}`
 : `Your measurements fall between sizes on this retailer's own chart, and ${equally || `${bucketLabel} is the closest`}.`;
 }
+if (matchType === 'pair' && pairMatchType === 'sister' && matchDetail.sisterListed) {
+const sister = matchDetail.sisterListed;
+const sisterBand = parseInt(sister, 10);
+const diff = typeof matchDetail.baseBand === 'number' && Number.isFinite(sisterBand) ? (sisterBand - matchDetail.baseBand) / 2 : 0;
+const words = _bcK.NUMBER_WORDS;
+const bands = diff ? `, ${words[Math.abs(diff)] || Math.abs(diff)} band size${Math.abs(diff) === 1 ? '' : 's'} ${diff > 0 ? 'larger' : 'smaller'},` : '';
+const feel = diff ? `the cups should fit, but the band may feel ${Math.abs(diff) === 1 ? 'a little ' : ''}${diff > 0 ? 'loose' : 'tight'}` : 'the cups should fit';
+if (nudge) {
+const other = alternate.pair && alternate.pair !== sister ? `and ${alternate.pair}, your other sister size, under ${alternate.label}` : `and also under ${alternate.label}`;
+return `This listing's size chart doesn't list your size. It lists your sister size ${sister} under ${bucketLabel} ${other}${limited ? ", so it can't reliably place you in either" : ''}. ${nudge}`;
+}
+return limited
+? `This listing's size chart doesn't list your size, only your sister size ${sister}${bands} under ${bucketLabel}, so it can't reliably place you. ${capitalize(feel)}.`
+: `This listing's size chart doesn't list your size. It lists your sister size ${sister}${bands} under ${bucketLabel}, so ${feel}.`;
+}
 if (matchType === 'pair' && pairMatchType === 'sister') {
 if (limited) {
 return nudge
-? `Your exact size isn't on this retailer's own chart, and a true sister size of yours is listed under both ${bucketLabel} and ${alternate.label}, so it can't reliably place you in either. ${nudge}`
-: `Your exact size isn't listed for ${bucketLabel}, only a true sister size of yours is, so this retailer's own chart can't reliably place you. ${bucketLabel} is where it lists that sister size.`;
+? `This listing's size chart doesn't list your size, and it lists a sister size of yours under both ${bucketLabel} and ${alternate.label}, so it can't reliably place you in either. ${nudge}`
+: `This listing's size chart doesn't list your size, only a sister size of yours under ${bucketLabel}, so it can't reliably place you.`;
 }
 return nudge
-? `Your exact size isn't on this retailer's own chart, but a true sister size of yours is listed under ${bucketLabel} and also under ${alternate.label}. ${nudge}`
-: `Your exact size isn't listed for ${bucketLabel}, but your true sister size is, so ${bucketLabel} should give a comparable fit.`;
+? `This listing's size chart doesn't list your size. It lists a sister size of yours under ${bucketLabel} and also under ${alternate.label}. ${nudge}`
+: `This listing's size chart doesn't list your size. It lists a sister size of yours under ${bucketLabel}, so the cups should fit.`;
 }
 if (ambiguousChart) {
 if (limited) {
 return nudge
-? `Your measurements sit close to the boundary between ${bucketLabel} and ${alternate.label} on this retailer's own chart, so it can't reliably place you in either. ${equally || `${bucketLabel} is the closer of the two`}, and ${nudge}`
+? `Your measurements sit close to the boundary between ${bucketLabel} and ${alternate.label} on this retailer's own chart. ${equally || `${bucketLabel} is the closer fit`}, and ${nudge}`
 : `Your measurements sit close to the boundary between two sizes on this retailer's own chart, so it can't reliably place you in either. ${equally || `${bucketLabel} is the closer of the two`}, but a different size may fit better.`;
 }
 return nudge
-? `Your measurements sit close to the boundary between ${bucketLabel} and ${alternate.label} on this retailer's own chart. ${equally || `${bucketLabel} is the closer of the two`}, and ${nudge}`
+? `Your measurements sit close to the boundary between ${bucketLabel} and ${alternate.label} on this retailer's own chart. ${equally || `${bucketLabel} is the closer fit`}, and ${nudge}`
 : `Your measurements sit close to the boundary between two sizes on this retailer's own chart. ${equally || `${bucketLabel} is the closer of the two`}, but a different size may fit better.`;
 }
 if (ratedScore >= CHART_TIER_CENTRED) {
@@ -5875,7 +6040,7 @@ return limited
 }
 if (limited) {
 return nudge
-? `You're between ${bucketLabel} and ${alternate.label} on this retailer's own chart: your measurements sit near the edge of its ${bucketLabel}, next to its ${alternate.label}, so it can't reliably place you in either. ${nudge}`
+? `You're between ${bucketLabel} and ${alternate.label} on this retailer's own chart: your measurements sit near the edge of its ${bucketLabel}, next to its ${alternate.label}. ${nudge}`
 : `Your measurements sit near the edge of this retailer's ${bucketLabel} size, so its own chart can't reliably place you in it. A different size may fit better.`;
 }
 return nudge
@@ -5889,8 +6054,8 @@ if (alternate.direction === 'down') return `${alternate.label} is worth trying i
 return null;
 }
 const NEARBY_PLAIN_REASON = Object.freeze({
-'size-up': 'The next size up.',
-'size-down': 'The next size down.',
+'size-up': 'One size up.',
+'size-down': 'One size down.',
 });
 function whyLineArguedAlternate(whyLineText, matchDetail) {
 const alternate = matchDetail ? matchDetail.boundaryAlternate : null;
@@ -5898,11 +6063,25 @@ const nudge = chartAlternateNudge(alternate);
 if (!nudge || !whyLineText || !whyLineText.includes(nudge)) return null;
 return { label: alternate.label, relation: alternate.direction === 'up' ? 'size-up' : 'size-down' };
 }
-function nearbyRowReason(row, fullReason, argued) {
-if (argued && row && row.label === argued.label && row.relation === argued.relation) {
-return NEARBY_PLAIN_REASON[row.relation] || fullReason;
+function cardLineArguedAlternate(cardLineText, matchDetail) {
+const line = chartBetweenCardLine(matchDetail);
+if (!line || !cardLineText || !cardLineText.includes(line)) return null;
+const alternate = matchDetail.boundaryAlternate;
+if (!line.includes(`${alternate.label} is worth trying`) || !chartAlternateNudge(alternate)) return null;
+return { label: alternate.label, relation: alternate.direction === 'up' ? 'size-up' : 'size-down' };
 }
-return fullReason;
+function whyWithoutCardLineNudge(whyLineText, cardLineText, matchDetail) {
+if (!whyLineText || !cardLineArguedAlternate(cardLineText, matchDetail)) return whyLineText;
+const nudge = chartAlternateNudge(matchDetail.boundaryAlternate);
+if (whyLineText.includes(`, and ${nudge}`)) return whyLineText.replace(`, and ${nudge}`, '.');
+if (whyLineText.includes(` ${nudge}`)) return whyLineText.replace(` ${nudge}`, '').trim();
+return whyLineText;
+}
+function nearbyRowReason(row, fullReason, argued) {
+if (!argued || !row || !Object.prototype.hasOwnProperty.call(NEARBY_PLAIN_REASON, row.relation)) return fullReason;
+const same = String(row.label || '').trim().toUpperCase() === String(argued.label || '').trim().toUpperCase();
+if (same && row.relation === argued.relation) return fullReason;
+return NEARBY_PLAIN_REASON[row.relation];
 }
 function composeCupShiftExplanation(matchDetail, displayBaseLabel, displayLabel) {
 const { styleKey, shiftDirection, shiftMagnitude, label, usedProductClaim, styleNote, baseLabel } = matchDetail;
@@ -5963,8 +6142,8 @@ if (!own || !store || plain(own) === plain(store)) return null;
 return {
 own,
 store,
-sentence: `Your ${own} is labelled ${store} on this listing.`,
-main: `${store} here (your ${own}).`,
+sentence: `Your ${own} is labeled ${store} on this listing.`,
+main: `Your ${own} is ${store} here.`,
 named: `${store} here (your ${own})`,
 inBrandLetters: `Your ${own} is ${store} in ${brandOwn(brandDisplayName)} own cup letters.`,
 };
@@ -5999,6 +6178,7 @@ return `${calculated} couldn't be found among this listing's sizes`;
 if (substitution.availability === 'notMade' && calculated) return `This style isn't made in ${calculated}`;
 if (substitution.availability === 'brandRange' && calculated) return long ? `${calculated} isn't made here` : `Your ${calculated} isn't made here`;
 if (substitution.availability === 'soldOut' && calculated) return long ? `${calculated} is sold out in this style right now` : `${calculated} is sold out in this style`;
+if (substitution.availability === 'soldOutListed' && calculated && substitution.inThisColour) return long ? `${calculated} is sold out in this color right now` : `Your ${calculated} is sold out in this color`;
 if (substitution.availability === 'soldOutListed' && calculated) return long ? `${calculated} is sold out on this listing right now` : `Your ${calculated} is sold out here`;
 if (long && calculated && storeLabelFor(substitution.ownLabel, calculated)) return `${calculated} isn't available here`;
 return calculated ? `Your ${calculated} isn't available here` : "Your size isn't available here";
@@ -6011,7 +6191,7 @@ if (!labelled) return null;
 const why = substitution.availability === 'notMade' ? 'not made in this bra'
 : substitution.availability === 'brandRange' ? "a size this brand doesn't make"
 : substitution.availability === 'soldOut' ? 'sold out in this bra'
-: substitution.availability === 'soldOutListed' ? 'sold out here'
+: substitution.availability === 'soldOutListed' ? (substitution.inThisColour ? 'sold out in this color' : 'sold out here')
 : 'not available here';
 return `Your ${labelled.own} is ${labelled.store} here, ${why}.`;
 }
@@ -6019,7 +6199,7 @@ function labelledSizeUnavailablePhrase(substitution) {
 if (substitution.availability === 'notMade') return "That isn't made in this style";
 if (substitution.availability === 'brandRange') return "That isn't made here";
 if (substitution.availability === 'soldOut') return 'That is sold out in this style';
-if (substitution.availability === 'soldOutListed') return 'That is sold out here';
+if (substitution.availability === 'soldOutListed') return substitution.inThisColour ? 'That is sold out in this color' : 'That is sold out here';
 return "That isn't available here";
 }
 function joinLetters(letters) {
@@ -6064,8 +6244,9 @@ return `${named} cups here couldn't be read, and ${one ? 'that' : 'one of them'}
 }
 if (substitution.availability === 'soldOutListed' && /^sister-size/.test(substitution.relation || '') && substitution.substituteInStock === true && substitution.calculatedLabel) {
 const named = storeLabelFor(substitution.ownLabel, substitution.calculatedLabel);
-const plain = `${substitution.calculatedLabel} is sold out. ${substitution.headlineLabel}, your sister size, is in stock.`;
-const labelledLine = named ? `${named.sentence} That is sold out. ${substitution.headlineLabel}, your sister size, is in stock.` : null;
+const soldOut = substitution.inThisColour ? 'sold out in this color' : 'sold out';
+const plain = `${substitution.calculatedLabel} is ${soldOut}. ${substitution.headlineLabel}, your sister size, is in stock.`;
+const labelledLine = named ? `${named.store} (your ${named.own}) is ${soldOut}. ${substitution.headlineLabel}, your sister size, is in stock.` : null;
 return (labelledLine && cardLineWords(labelledLine) <= CARD_LINE_WORD_LIMIT) ? labelledLine : plain;
 }
 const shown = substitution.headlineLabel;
@@ -6074,9 +6255,8 @@ const what = /^sister-size/.test(substitution.relation || '') ? 'its sister size
 const projected = substitution.projectedLabel && substitution.projectedLabel !== substitution.headlineLabel;
 const labelled = projected ? null : storeLabelFor(substitution.ownLabel, substitution.calculatedLabel);
 if (labelled) {
-const lead = `${labelled.sentence} ${labelledSizeUnavailablePhrase(substitution)}`;
-const full = `${lead}, so ${shown}, ${what}, is shown.`;
-return cardLineWords(full) <= CARD_LINE_WORD_LIMIT ? full : `${lead}, so ${shown} is shown.`;
+const said = labelledSizeUnavailablePhrase(substitution).replace(/^That /, '');
+return `${labelled.store} (your ${labelled.own}) ${said}; ${shown} is ${what}.`;
 }
 return `${substitutionAvailabilityPhrase(substitution, false)}; ${shown} is ${what}.`;
 }
@@ -6091,13 +6271,13 @@ return gap.letterSteps ? `${count(gap.letterSteps, 'size')} ${way(gap.letterStep
 if (typeof gap.bandDiff !== 'number' || typeof gap.cupDiff !== 'number') return null;
 if (form === 'short') {
 if (gap.bandDiff === 0 && !gap.cupDiff) return null;
-return closestDistancePhrase(gap.bandDiff, gap.bandDiff === 0 ? gap.cupDiff : (gap.volumeDiff || 0));
+return closestDistancePhrase(gap.bandDiff, gap.bandDiff === 0 ? gap.cupDiff : (gap.volumeDiff || 0), null, { cupDiff: gap.cupDiff });
 }
 if (gap.bandDiff === 0) {
 return gap.cupDiff ? `${count(gap.cupDiff, 'cup size')} ${way(gap.cupDiff)} on the same band` : null;
 }
 if (!gap.volumeDiff) return `the same-size cups on a band ${count(gap.bandDiff, 'size')} ${way(gap.bandDiff)}`;
-return `${count(gap.bandDiff, 'band size')} ${way(gap.bandDiff)}, with cups ${count(gap.volumeDiff, 'size')} ${gap.volumeDiff > 0 ? 'bigger' : 'smaller'}`;
+return bandAndCupLettersPhrase(gap.bandDiff, gap.volumeDiff, null, { cupDiff: gap.cupDiff });
 }
 function belowBandFloorSentence(ownLabel, sisterLabel, steps) {
 const band = String(ownLabel).match(/^\d+/);
@@ -6147,9 +6327,9 @@ if (total > 1) summaries.push(line(first, false));
 summaries.push(confidence ? (total === 1 ? line('one brand', false) : line(`${total} brands`, true)) : `${total === 1 ? 'Another brand makes' : 'Other brands make'} your ${size}`);
 const lead = confidence
 ? `${suggestion.sizeFromBase === true ? `Your size, ${size},` : size} is also made by these brands, where your size is a surer fit.`
-: (total === 1 ? `${size} isn't available here, and ${first} makes it.` : `${size} isn't available here, and these brands make it.`);
+: '';
 const brands = named.map((b) => {
-const theirs = b.destinationLabel && b.destinationLabel !== size ? `, labelled ${b.destinationLabel} there` : '';
+const theirs = b.destinationLabel && b.destinationLabel !== size ? `, labeled ${b.destinationLabel} there` : '';
 const sells = garmentTypesPhrase(b.garmentTypes);
 return {
 name: b.displayName,
@@ -6188,6 +6368,9 @@ let base;
 if (matchDetail && matchDetail.type === 'bandOnly') return bandOnlyWhy(matchDetail, substitution, displayBaseLabel);
 if (matchDetail && matchDetail.type === 'oneSizeOnly') return ONE_SIZE_ONLY_LINE;
 if (matchDetail && matchDetail.type === 'storeSizesUnread') {
+if (matchDetail.notShownYet) {
+return `This listing's sizes haven't loaded on the page yet, so this is your size from your measurements, ${displayBaseLabel || matchDetail.baseLabel}, not one of its sizes. The card reads the page again when they load.`;
+}
 if (matchDetail.letter) {
 return `This store's sizes couldn't be read, so this is your size from your measurements, ${displayBaseLabel || matchDetail.baseLabel}, or ${matchDetail.letter} in letter sizes, the size most brands give your measurements; check it against the store's size guide.`;
 }
@@ -6417,16 +6600,23 @@ return matchDetail.fromPublishedTable
 }
 return NO_STYLE_ADJUSTMENT_NOTE;
 }
-function bandCupDistancePhrase(bandDiff, volumeDiff) {
+function bandCupDistancePhrase(bandDiff, volumeDiff, sisterShown) {
 const words = _bcK.NUMBER_WORDS;
 const count = (n, noun) => `${words[Math.abs(n)] || Math.abs(n)} ${noun}${Math.abs(n) === 1 ? '' : 's'}`;
 if (bandDiff === 0) return `${count(volumeDiff, 'cup size')} ${volumeDiff > 0 ? 'larger' : 'smaller'} on the same band`;
-const band = `${count(bandDiff, 'band size')} ${bandDiff > 0 ? 'larger' : 'smaller'}`;
-if (volumeDiff === 0) return `${band}, with the same-size cups`;
-return `${band}, with cups ${count(volumeDiff, 'size')} ${volumeDiff > 0 ? 'bigger' : 'smaller'}`;
+return bandAndCupLettersPhrase(bandDiff, volumeDiff, sisterShown);
 }
 function availabilityInfo(gridResult, gridSkippedReason, productName, productUnavailable, stockStatus, calculatedLabel, nearestLabel) {
 const retailer = productName || 'this retailer';
+if (!productUnavailable && gridResult && gridResult.herInAnotherColour) {
+const found = gridResult.herInAnotherColour;
+return {
+label: soldOutInThisColourLine(found),
+icon: '!',
+cls: 'availWarn',
+tooltip: `Your size is sold out in the color on screen, and in stock in ${colourListPhrase(found.colours, found.colours.length)}. Pick one of those colors on the page to buy it in your size.`,
+};
+}
 if (productUnavailable) {
 return {
 label: 'Product unavailable',
@@ -6539,7 +6729,7 @@ return {
 label: 'Availability not tracked',
 icon: '○',
 cls: 'availNeutral',
-tooltip: "This size is made in the colour shown, but the page doesn't show whether it's in stock until it's chosen there, so no stock is claimed.",
+tooltip: "This size is made in the color shown, but the page doesn't show whether it's in stock until it's chosen there, so no stock is claimed.",
 };
 }
 if (gridResult.status === 'exact' || gridResult.status === 'substituted' || gridResult.status === 'approximate') {
@@ -6552,8 +6742,8 @@ label: 'Not available here',
 icon: '✕',
 cls: 'availBad',
 tooltip: gridResult.nothingInStockFrom === 'page'
-? `Nothing is in stock in your size${shown ? `, ${shown},` : ''} on this listing right now. The listing shows every size sold out in the colour shown.`
-: `Nothing is in stock in your size${shown ? `, ${shown},` : ''} on this listing right now. The store's own stock list shows no size in stock in the colour shown.`,
+? `Nothing is in stock in your size${shown ? `, ${shown},` : ''} on this listing right now. The listing shows every size sold out in the color shown.`
+: `Nothing is in stock in your size${shown ? `, ${shown},` : ''} on this listing right now. The store's own stock list shows no size in stock in the color shown.`,
 };
 }
 if (gridResult.status === 'out-of-range' && gridResult.bandOnly) {
@@ -6577,7 +6767,7 @@ const [from, to] = gridResult.listingCups || [];
 const says = gridResult.listingCupsFromTitle ? "This listing's title says it is made for" : 'This listing says it is made for';
 const sibling = gridResult.siblingListing ? ` The same bra is sold for your cup as its own listing, "${gridResult.siblingListing}".` : '';
 const closest = gridResult.closestInStockLabel ? ` ${namedClosestSentence(gridResult.closestInStockNamed || { label: gridResult.closestInStockLabel })}` : '';
-return { label: 'Not available here', icon: '✕', cls: 'availBad', tooltip: `${says} ${from} to ${to} cups, not your size, ${shown}.${sibling}${closest}` };
+return { label: NOT_MADE_HERE_LABEL, icon: '✕', cls: 'availBad', tooltip: `${says} ${from} to ${to} cups, not your size, ${shown}.${sibling}${closest}` };
 }
 if (gridResult.status === 'out-of-range' && gridResult.noLetterSource) {
 const shown = calculatedLabel || (gridResult.trueSize && gridResult.trueSize.label) || 'your size';
@@ -6638,13 +6828,13 @@ if (gridResult.status === 'out-of-range' && gridResult.rowsLeaveOut) {
 const shown = calculatedLabel || (gridResult.trueSize && gridResult.trueSize.label) || 'your size';
 const near = gridResult.nearestBeyondReach;
 const closest = near ? closestInStockSentence(near, nearestLabel || near.label, null) : null;
-return { label: 'Not available here', icon: '✕', cls: 'availBad', tooltip: `${rowsLeaveOutSentence(gridResult.rowsLeaveOut, shown)}${closest ? ` ${closest}` : ''}` };
+return { label: NOT_MADE_HERE_LABEL, icon: '✕', cls: 'availBad', tooltip: `${rowsLeaveOutSentence(gridResult.rowsLeaveOut, shown)}${closest ? ` ${closest}` : ''}` };
 }
 if (gridResult.status === 'out-of-range' && gridResult.notMadeByList) {
 const shown = calculatedLabel || (gridResult.trueSize && gridResult.trueSize.label) || 'Your size';
 const near = gridResult.nearestBeyondReach;
 const closest = near ? closestInStockSentence(near, nearestLabel || near.label, null) : null;
-return { label: 'Not available here', icon: '✕', cls: 'availBad', tooltip: `This bra isn't made in ${shown}: the store's own list of its sizes doesn't include it.${closest ? ` ${closest}` : ''}` };
+return { label: NOT_MADE_HERE_LABEL, icon: '✕', cls: 'availBad', tooltip: `This bra isn't made in ${shown}: the store's own list of its sizes doesn't include it.${closest ? ` ${closest}` : ''}` };
 }
 if (gridResult.status === 'out-of-range' && Array.isArray(gridResult.unreadNearSize) && gridResult.unreadNearSize.length) {
 const shown = calculatedLabel || (gridResult.trueSize && gridResult.trueSize.label) || 'Your size';
@@ -6670,11 +6860,18 @@ tooltip: `${beyond.targetLabel} isn't in stock on this listing. The closest size
 };
 }
 if (beyond && beyond.targetLabel && beyond.label && typeof beyond.inches === 'number') {
+const notMade = herNotMadeSentence(gridResult.herNotMade, calculatedLabel || beyond.targetLabel);
+const sister = sisterOnBandOf(beyond, beyond.volumeDiff);
+const far = bandCupDistancePhrase(beyond.bandDiff, beyond.volumeDiff, beyond.sisterShown || (sister && sister.label));
+const why = /^your sister size /.test(far) ? far : `${far}, too far from your size to recommend`;
+const sisterToo = notMade ? sisterNotMadeSentence(gridResult.herNotMade) : null;
 return {
-label: 'Not available here',
+label: notMade ? NOT_MADE_HERE_LABEL : 'Not available here',
 icon: '✕',
 cls: 'availBad',
-tooltip: `${calculatedLabel || beyond.targetLabel} isn't in stock on this listing. The closest size that is, ${nearestLabel || beyond.label}, is ${bandCupDistancePhrase(beyond.bandDiff, beyond.volumeDiff)}, too far from your size to recommend.`,
+tooltip: notMade
+? `${notMade}${sisterToo ? ` ${sisterToo}` : ''} The closest size in stock, ${nearestLabel || beyond.label}, is ${why}.`
+: `${calculatedLabel || beyond.targetLabel} isn't in stock on this listing. The closest size that is, ${nearestLabel || beyond.label}, is ${why}.`,
 };
 }
 if (gridResult.listedSoldOut) {
@@ -6745,7 +6942,7 @@ return { label: 'Not available here', icon: '✕', cls: 'availBad', tooltip: `${
 }
 if (gridResult.notMade && _bcVariantFeedFactText) {
 const shown = calculatedLabel || (gridResult.trueSize && gridResult.trueSize.label);
-if (shown) return { label: 'Not available here', icon: '✕', cls: 'availBad', tooltip: _bcVariantFeedFactText('notMade', shown) };
+if (shown) return { label: NOT_MADE_HERE_LABEL, icon: '✕', cls: 'availBad', tooltip: _bcVariantFeedFactText('notMade', shown) };
 }
 if (gridResult.closestInStockLabel) {
 return { label: 'Not available here', icon: '✕', cls: 'availBad', tooltip: `This listing doesn't carry your size. ${namedClosestSentence(gridResult.closestInStockNamed || { label: gridResult.closestInStockLabel })}` };
@@ -6895,38 +7092,107 @@ return (text === text.toUpperCase() && /[A-Z]/.test(text))
 ? text.toLowerCase().replace(/(^|[\s/(-])([a-z])/g, (m, lead, ch) => lead + ch.toUpperCase())
 : text;
 }
+function herNotMadeSentence(notMade, herShown) {
+if (!notMade || !notMade.from || !notMade.to || !herShown) return null;
+if (notMade.fullGrid === false && Array.isArray(notMade.bands) && Array.isArray(notMade.cups)) {
+const cups = Array.isArray(notMade.cupsShown) ? notMade.cupsShown : notMade.cups;
+const bands = notMade.bands[0] === notMade.bands[1] ? `band ${notMade.bands[0]}` : `bands ${notMade.bands[0]} to ${notMade.bands[1]}`;
+const cupWords = cups[0] === cups[1] ? `cup ${cups[0]}` : `cups ${cups[0]} to ${cups[1]}`;
+return `This bra comes in ${bands}, ${cupWords}, so your ${herShown} isn't made here.`;
+}
+return `This bra comes in ${notMade.fromShown || notMade.from.label} to ${notMade.toShown || notMade.to.label}, so your ${herShown} isn't made here.`;
+}
+function sisterNotMadeSentence(notMade) {
+const sister = notMade && notMade.sisterNotMade;
+if (!sister || !sister.label) return null;
+return `Your sister size, ${notMade.sisterNotMadeShown || sister.label}, isn't made here either.`;
+}
+function sisterSoldOutLine(sister, shown) {
+if (!sister || !shown) return null;
+const where = sister.inThisColour ? 'in this color' : 'here';
+const colours = Array.isArray(sister.inStockIn) ? sister.inStockIn : [];
+return colours.length
+? `${shown}, your sister size, is sold out ${where}; it's in stock in ${colourListPhrase(colours, 2)}.`
+: `${shown}, your sister size, is sold out ${where}.`;
+}
+function colourNameHasCode(name) {
+const text = String(name || '').trim();
+return !text || /\d/.test(text) || /-[A-Za-z0-9]{1,3}$/.test(text);
+}
+function colourListPhrase(colours, n) {
+const all = (colours || []).filter((c) => typeof c === 'string' && c.trim());
+const named = all.filter((c) => !colourNameHasCode(c)).slice(0, Math.max(0, n)).map(tidyColourName);
+const more = all.length - named.length;
+if (!named.length) return `${more} other color${more === 1 ? '' : 's'}`;
+if (!more) return named.length === 1 ? named[0] : `${named.slice(0, -1).join(', ')} and ${named[named.length - 1]}`;
+return `${named.join(', ')} and ${more} more`;
+}
+function soldOutInThisColourLine(found) {
+return `${SOLD_OUT_IN_THIS_COLOUR}. In stock in ${colourListPhrase(found && found.colours, 2)}.`;
+}
+const SOLD_OUT_IN_THIS_COLOUR = 'Sold out in this color';
+function thisColourLine(shown, gap) {
+if (!shown || !gap) return null;
+const words = _bcK.NUMBER_WORDS;
+const count = (n, noun) => `${words[Math.abs(n)] || Math.abs(n)} ${noun}${Math.abs(n) === 1 ? '' : 's'}`;
+let how = null;
+if (typeof gap.bandDiff === 'number' && gap.bandDiff === 0 && gap.cupDiff) how = `${count(gap.cupDiff, 'cup')} ${gap.cupDiff > 0 ? 'larger' : 'smaller'}`;
+else how = substituteGapPhrase(gap, 'short');
+return how ? `In this color, ${shown}, ${how}, is in stock.` : null;
+}
 function otherColourCardLine(found, herSize, shownSize, onScreen, ownLabel) {
 if (!found || !Array.isArray(found.colours) || !found.colours.length || !herSize) return null;
 if (!found.own && !shownSize) return null;
 const labelled = storeLabelFor(ownLabel, herSize);
-const her = labelled ? `${labelled.own}, labelled ${labelled.store} here,` : herSize;
-const colours = found.colours.map(tidyColourName);
-const here = onScreen ? tidyColourName(onScreen) : 'the colour shown';
+const her = labelled ? `${labelled.own}, labeled ${labelled.store} here,` : herSize;
+const colours = found.colours.filter((c) => !colourNameHasCode(c)).map(tidyColourName);
+const here = onScreen && !colourNameHasCode(onScreen) ? tidyColourName(onScreen) : 'the color shown';
 const listOf = (n) => {
 const named = colours.slice(0, n);
-const more = colours.length - named.length;
-const counted = `${more} other colour${more === 1 ? '' : 's'}`;
+const more = found.colours.length - named.length;
+const counted = `${more} other color${more === 1 ? '' : 's'}`;
 if (!named.length) return counted;
 if (more > 0) return `${named.join(', ')} and ${counted}`;
 return named.length === 1 ? named[0] : `${named.slice(0, -1).join(', ')} and ${named[named.length - 1]}`;
 };
 const say = (list) => (found.own
 ? `Your ${her} is in stock in ${list}, not ${here}.`
-: `Your ${her} isn't in stock in any colour; ${shownSize} is, in ${list}.`);
+: `Your ${her} isn't in stock in any color; ${shownSize} is, in ${list}.`);
 for (let n = Math.min(3, colours.length); n > 0; n -= 1) {
 const text = say(listOf(n));
 if (cardLineWords(text) <= CARD_LINE_WORD_LIMIT) return text;
 }
 return say(listOf(0));
 }
-function closestDistancePhrase(bandDiff, volumeDiff) {
+function closestDistancePhrase(bandDiff, volumeDiff, sisterShown, opts) {
 const words = _bcK.NUMBER_WORDS;
 const count = (n, noun) => `${words[Math.abs(n)] || Math.abs(n)} ${noun}${Math.abs(n) === 1 ? '' : 's'}`;
 if (bandDiff === 0) return `${count(volumeDiff, 'cup size')} ${volumeDiff > 0 ? 'larger' : 'smaller'}, same band`;
-const band = `${count(bandDiff, 'band size')} ${bandDiff > 0 ? 'larger' : 'smaller'}`;
-return volumeDiff === 0 ? `${band}, same-size cups` : `${band}, cups ${count(volumeDiff, 'size')} ${volumeDiff > 0 ? 'bigger' : 'smaller'}`;
+return bandAndCupLettersPhrase(bandDiff, volumeDiff, sisterShown, { short: true, ...(opts || {}) });
 }
-function closestInStockSentence(beyond, shownLabel, colour) {
+function bandAndCupLettersPhrase(bandDiff, volumeDiff, sisterShown, opts) {
+const words = _bcK.NUMBER_WORDS;
+const count = (n, noun) => `${words[Math.abs(n)] || Math.abs(n)} ${noun}${Math.abs(n) === 1 ? '' : 's'}`;
+const o = opts || {};
+if (sisterShown && Math.abs(bandDiff) === 1 && Math.abs(volumeDiff) === 1) {
+if (o.short) return `one cup ${volumeDiff > 0 ? 'larger' : 'smaller'} than your sister size ${sisterShown}`;
+return `your sister size ${sisterShown} one cup ${volumeDiff > 0 ? 'larger' : 'smaller'}, so the cup may feel ${volumeDiff > 0 ? 'roomy' : 'snug'}`;
+}
+const band = `${count(bandDiff, 'band size')} ${bandDiff > 0 ? 'larger' : 'smaller'}`;
+const letters = typeof o.cupDiff === 'number' ? o.cupDiff : volumeDiff - bandDiff;
+const cups = letters === 0 ? 'same cup letter' : `${count(letters, 'cup letter')} ${letters > 0 ? 'larger' : 'smaller'}`;
+if (letters === 0 && volumeDiff !== 0) return o.short ? `${band}, ${cups}, ${volumeDiff > 0 ? 'bigger' : 'smaller'} cups` : `${band}, ${cups}, so the cups are ${volumeDiff > 0 ? 'bigger' : 'smaller'}`;
+if (volumeDiff !== 0) return `${band}, ${cups}`;
+return o.short ? `${band}, ${cups}, same-size cups` : `${band}, ${cups}, so the cups are the same size`;
+}
+function sisterOnBandOf(size, volumeDiff) {
+if (!size || typeof size.band !== 'number' || !size.cup || typeof volumeDiff !== 'number') return null;
+const ladder = _bcK.CUP_LETTERS;
+const at = ladder.indexOf(size.cup);
+const cup = at === -1 ? null : ladder[at - volumeDiff];
+return cup ? { band: size.band, cup, label: `${size.band}${cup}` } : null;
+}
+function closestInStockSentence(beyond, shownLabel, colour, sisterShown) {
 if (!beyond || !(shownLabel || beyond.label)) return null;
 const words = _bcK.NUMBER_WORDS;
 const count = (n, noun) => `${words[Math.abs(n)] || Math.abs(n)} ${noun}${Math.abs(n) === 1 ? '' : 's'}`;
@@ -6934,7 +7200,8 @@ let howFar = null;
 if (beyond.bandOnly === true && typeof beyond.bandDiff === 'number' && beyond.bandDiff !== 0) {
 howFar = bandOnlyDistancePhrase(beyond.bandDiff);
 } else if (typeof beyond.inches === 'number' && typeof beyond.bandDiff === 'number' && typeof beyond.volumeDiff === 'number') {
-howFar = closestDistancePhrase(beyond.bandDiff, beyond.volumeDiff);
+const sister = sisterOnBandOf(beyond, beyond.volumeDiff);
+howFar = closestDistancePhrase(beyond.bandDiff, beyond.volumeDiff, sisterShown || beyond.sisterShown || (sister && sister.label));
 } else if (typeof beyond.distance === 'number' && beyond.distance > 0) {
 howFar = `${count(beyond.distance, 'size')} ${beyond.relation === 'size-down' ? 'smaller' : 'larger'}`;
 }
@@ -6962,12 +7229,71 @@ if (!matchDetail || matchDetail.type !== 'chartMatch') return null;
 const alternate = matchDetail.boundaryAlternate;
 if (!alternate || !alternate.label || !matchDetail.bucketLabel || alternate.label === matchDetail.bucketLabel) return null;
 if (matchDetail.matchType === 'pair' && matchDetail.pairMatchType === 'sister') return null;
-if (matchDetail.tiedWith && matchDetail.tiedWith !== matchDetail.bucketLabel) return `Between ${matchDetail.bucketLabel} and ${alternate.label} on this chart.`;
-return `Between ${matchDetail.bucketLabel} and ${alternate.label} on this chart; ${matchDetail.bucketLabel} is closer.`;
+if (matchDetail.tiedWith && matchDetail.tiedWith !== matchDetail.bucketLabel) return `You're between ${matchDetail.bucketLabel} and ${alternate.label} on this chart, as close to each.`;
+const way = alternate.direction === 'down' ? 'a closer fit' : 'more room';
+return `You're on the edge between ${matchDetail.bucketLabel} and ${alternate.label}; ${alternate.label} is worth trying if you'd like ${way}.`;
+}
+function bandCupEdge(measurements, shown, base) {
+if (!measurements || !shown || typeof shown.band !== 'number' || !shown.cup) return null;
+const underbust = Number(measurements.underbust);
+const bust = Number(measurements.bust);
+if (!Number.isFinite(underbust) || !Number.isFinite(bust) || underbust <= 0 || bust <= 0) return null;
+const band = 2 * Math.round(underbust / 2);
+if (band !== shown.band) return null;
+const ladder = _bcK.CUP_LETTERS;
+const at = ladder.indexOf(shown.cup);
+if (at === -1) return null;
+const settle = (n) => Math.round(n * 1e6) / 1e6;
+const difference = settle(bust - (underbust + band) / 2);
+const bandOffset = settle(underbust - band);
+const cupOffset = settle(difference - Math.round(difference));
+if (base && (base.band !== band || base.cup !== ladder[Math.round(difference)])) return null;
+const edge = _bcK.EDGE_OF_SIZE_INCHES;
+const bandFromPoint = 1 - Math.abs(bandOffset);
+const cupFromPoint = 0.5 - Math.abs(cupOffset);
+const bandLean = (bandFromPoint <= edge + 1e-9 && bandOffset !== 0) ? Math.sign(bandOffset) : 0;
+const cupLean = (cupFromPoint <= edge + 1e-9 && cupOffset !== 0) ? Math.sign(cupOffset) : 0;
+if (!bandLean && !cupLean) return null;
+if (bandLean && (!cupLean || bandFromPoint <= cupFromPoint)) {
+const cup = ladder[at - bandLean];
+const next = band + 2 * bandLean;
+return cup ? { axis: 'band', direction: bandLean, size: { band: next, cup, label: `${next}${cup}` }, bandLean } : null;
+}
+const cup = ladder[at + cupLean];
+return cup ? { axis: 'cup', direction: cupLean, size: { band, cup, label: `${band}${cup}` }, bandLean } : null;
+}
+function bandCupEdgeLine(edge, shown) {
+if (!edge || !shown) return null;
+if (edge.axis === 'band') return `You're between bands; ${shown} is worth trying if you'd like a ${edge.direction > 0 ? 'looser' : 'firmer'} band.`;
+return `You're between cups; ${shown} is worth trying if you'd like ${edge.direction > 0 ? 'more room in the cup' : 'a closer fit in the cup'}.`;
+}
+function nearbyBandCupRows(sizes, named, bandLean) {
+const list = Array.isArray(sizes) ? sizes.filter((c) => c && c.label) : [];
+const said = new Set((named || []).filter(Boolean).map((label) => String(label).replace(/\s+/g, '').toUpperCase()));
+const open = (c) => ![c.label, c.printed].some((label) => label && said.has(String(label).replace(/\s+/g, '').toUpperCase()));
+const first = (relation) => list.find((c) => c.relation === relation && open(c)) || null;
+const up = first('sister-size-up') || first('same-band-larger-cup');
+const down = first('sister-size-down') || first('same-band-smaller-cup');
+const way = { 'sister-size-up': 'looser', 'sister-size-down': 'firmer', 'same-band-larger-cup': 'cupUp', 'same-band-smaller-cup': 'cupDown' };
+let rows = [up, down].filter(Boolean).map((c) => ({ ...c, way: way[c.relation] }));
+const herWay = bandLean > 0 ? rows[0] : bandLean < 0 ? rows[1] : null;
+if (rows.length === 2 && herWay && /^sister-size-/.test(herWay.relation || '')) rows = [herWay];
+return rows;
+}
+function nearbyBandCupReason(row) {
+const words = {
+looser: 'One band up, one cup letter down, so the cups fit the same. Worth trying if bands tend to feel tight on you.',
+firmer: 'One band down, one cup letter up, so the cups fit the same. Worth trying if bands tend to ride up on you.',
+cupUp: 'Same band, one cup letter up. Worth trying if cups tend to feel snug on you.',
+cupDown: 'Same band, one cup letter down. Worth trying if cups tend to gap on you.',
+};
+const text = row && words[row.way];
+if (!text) return null;
+return row.inStock === true ? `${text} In stock.` : text;
 }
 function cardLine(pieces) {
 const p = pieces || {};
-const order = [['oneSize', p.oneSize], ['brandData', p.brandData], ['storeSizes', p.storeSizes], ['backorder', p.backorder], ['otherColour', p.otherColour], ['closest', p.closest], ['bandOnly', p.bandOnly], ['substitute', p.substitute], ['twoSizes', p.twoSizes], ['pastChartEdge', p.pastChartEdge], ['between', p.between], ['stock', p.stock]]
+const order = [['oneSize', p.oneSize], ['brandData', p.brandData], ['storeSizes', p.storeSizes], ['backorder', p.backorder], ['thisColour', p.thisColour], ['otherColour', p.otherColour], ['sisterSoldOut', p.sisterSoldOut], ['closest', p.closest], ['bandOnly', p.bandOnly], ['substitute', p.substitute], ['twoSizes', p.twoSizes], ['pastChartEdge', p.pastChartEdge], ['between', p.between], ['edge', p.edge], ['stock', p.stock]]
 .filter(([, text]) => !!text);
 const displacedFrom = (list) => list.map(([kind, text]) => ({ kind, text }));
 if (p.herLabel && !(order.length && ['otherColour', 'substitute'].includes(order[0][0]))) {
@@ -6995,6 +7321,12 @@ if (c.shown && named && names[named] !== c.shown) return null;
 return sentence;
 }
 function ratingStockSentence(c, size) {
+if (c.ratedBy === 'in stock in another colour') {
+const colours = c.otherColours && Array.isArray(c.otherColours.colours) ? c.otherColours.colours : [];
+return colours.length
+? `${size} is sold out in this color right now, and in stock in ${colourListPhrase(colours, 3)}; pick one of those on the page to buy it in your size.`
+: `${size} is sold out in this color right now, and in stock in another color of this bra.`;
+}
 if (c.ratedBy === 'on the listing, stock not read') {
 return `${size} is one of this listing's own sizes; check its stock when you pick your size.`;
 }
@@ -7062,9 +7394,11 @@ function backorderCardLine(herSize) {
 return `${herSize} is on backorder here: you can order it now, and it's sent later.`;
 }
 const ONE_SIZE_ONLY_LINE = 'This bra comes in one size only; its size guide can tell you if it fits.';
-const BRAND_DATA_UNAVAILABLE_LINE = "Brand sizes didn't load, so this is your size from your measurements; reopen the card to try again.";
-const STORE_SIZES_UNREAD_LINE = "This store's sizes couldn't be read, so this is your size from your measurements; check the store's size guide.";
-function storeSizesUnreadLine(size, letter) {
+const BRAND_DATA_UNAVAILABLE_LINE = "Brand sizes didn't load; reopen the card to try again.";
+const STORE_SIZES_UNREAD_LINE = "This store's sizes couldn't be read; check its size guide.";
+const SIZES_NOT_SHOWN_YET_LINE = "Waiting for this listing's sizes to load.";
+function storeSizesUnreadLine(size, letter, notShownYet) {
+if (notShownYet) return SIZES_NOT_SHOWN_YET_LINE;
 if (!letter) return STORE_SIZES_UNREAD_LINE;
 return `${size}, or ${letter} in letter sizes. This store's sizes couldn't be read, so check its size guide.`;
 }
@@ -7100,13 +7434,15 @@ const RATING_REASON_PHRASES = Object.freeze({
 'further-size': 'A few sizes off; check fit',
 'unread-letters': 'Best pick from the sizes shown',
 'not-made-here': 'Closest size this bra comes in',
-'stock-confirmed': 'Your size, in stock here',
+'stock-confirmed': 'Your size, on this listing',
 'stock-unconfirmed': 'Your size; check stock when ordering',
 'own-size': 'Your size, from your measurements',
 'two-cup-option': 'This option fits two cup sizes',
 'listing-contradicts': 'Listing describes sizes two ways',
 'brand-letters-unresolved': 'Cup letters may differ here',
 'stock-unread': 'Your size is listed here',
+'band-not-picked': 'Pick your band size to confirm',
+'other-colour': 'Your size, in another color',
 'disputed-style': 'This style fits differently by brand',
 'letter-cups-differ': 'Closest letter; check the cup range',
 'brand-sizing-confirmed': 'Your size, matching the brand',
@@ -7136,8 +7472,10 @@ const RATING_REASON_PHRASES = Object.freeze({
 'band-only': 'Sold by band size only',
 'fit-tool': "From the brand's own fit tool",
 'store-sizes-unread': 'Your size; check the store sizes',
+'sizes-not-shown': "Waiting for this listing's sizes",
 'brand-data': 'Your size from your measurements',
 });
+const RATING_REASON_CHART_SISTER_NAMED = 'Chart lists {size}, your sister size';
 const RATING_REASON_BRAND_PHRASES = Object.freeze({
 'brand-sizing': 'Matches {brand} own sizing',
 'brand-calculator': 'From {brand} size calculator',
@@ -7150,7 +7488,10 @@ const RATING_REASON_SAID_BY_LINE = Object.freeze({
 'two-sizes': 'twoSizes',
 'past-chart-edge': 'pastChartEdge',
 'store-sizes-unread': 'storeSizes',
+'sizes-not-shown': 'storeSizes',
 'brand-data': 'brandData',
+'chart-between': 'between',
+'chart-edge': 'between',
 });
 const RATING_REASON_NON_RATINGS = ['No style detected', 'Not sized like a bra', 'Beyond supported sizes', "Outside this brand's range", "Not on this brand's chart", "Between this brand's chart rows"];
 function ratingReasonKey(ctx) {
@@ -7175,7 +7516,7 @@ const own = ownRatingReasonKey(c, confidence);
 if (relationKey && (!own || RATING_REASON_CONFIRMATION_KEYS.includes(own))) return relationKey;
 return own;
 }
-const RATING_REASON_CONFIRMATION_KEYS = ['stock-confirmed', 'stock-unconfirmed', 'stock-unread', 'disputed-style', 'brand-sizing-confirmed', 'brand-sizing', 'listing-claim', 'no-style', 'not-made-here', 'own-size', 'two-cup-option', 'brand-letters-unresolved'];
+const RATING_REASON_CONFIRMATION_KEYS = ['stock-confirmed', 'other-colour', 'stock-unconfirmed', 'stock-unread', 'disputed-style', 'brand-sizing-confirmed', 'brand-sizing', 'listing-claim', 'no-style', 'not-made-here', 'own-size', 'band-not-picked', 'two-cup-option', 'brand-letters-unresolved'];
 function ownRatingReasonKey(c, confidence) {
 if (c.cause === 'pastBrandRange') return 'not-made-here';
 if (c.cause === 'noStyleGrid') return 'no-style';
@@ -7191,15 +7532,17 @@ if (detail && detail.fitOption && detail.fitOption.fits === false) return 'lette
 if (c.ratedBy === 'her letter is in two overlapping options, both in stock') return 'two-options';
 const type = detail ? detail.type : null;
 if (type === 'bandOnly') return 'band-only';
-if (type === 'storeSizesUnread') return 'store-sizes-unread';
+if (type === 'storeSizesUnread') return detail.notShownYet ? 'sizes-not-shown' : 'store-sizes-unread';
 if (type === 'brandDataUnavailable') return 'brand-data';
 if (!detail || type === 'cupShift') {
 if (detail && detail.verifiedFormula) return 'brand-sizing';
 if (detail && (detail.usedProductClaim || detail.bandAdjustmentApplied || detail.cupAdjustmentApplied)) return 'listing-claim';
 if (c.ratedBy === 'on the listing, in stock') return 'stock-confirmed';
+if (c.ratedBy === 'in stock in another colour') return 'other-colour';
 if (c.ratedBy === 'on the listing, stock not read') return 'stock-unread';
 if (c.ratedBy === 'a disputed style, at a brand whose sizing is verified' || c.ratedBy === 'a disputed style') return 'disputed-style';
 if (c.ratedBy === 'her own size, stock not checked') return 'own-size';
+if (c.ratedBy === 'her band not picked on the rows') return 'band-not-picked';
 if (c.ratedBy === 'a style read between two') return 'no-style';
 if (c.ratedBy === 'an option made for two cups') return 'two-cup-option';
 if (c.ratedBy === "the brand's cup letters unresolved") return 'brand-letters-unresolved';
@@ -7242,6 +7585,9 @@ function ratingReasonPhrase(key, ctx) {
 if (key && ctx && ctx.lineKind && RATING_REASON_SAID_BY_LINE[key] === ctx.lineKind) return null;
 const template = key ? RATING_REASON_PHRASES[key] : null;
 if (!template) return null;
+if (key === 'chart-sister' && ctx && typeof ctx.sisterSize === 'string' && /^\d{2}[A-Z]{1,4}$/.test(ctx.sisterSize)) {
+return RATING_REASON_CHART_SISTER_NAMED.replace('{size}', ctx.sisterSize);
+}
 const brand = ctx && typeof ctx.brandName === 'string' ? ctx.brandName.replace(/\s*\([^)]*\)\s*$/, '').trim() : '';
 const branded = brand && RATING_REASON_BRAND_PHRASES[key] ? RATING_REASON_BRAND_PHRASES[key].replace('{brand}', possessiveName(brand)) : null;
 if (branded && branded.split(/\s+/).filter(Boolean).length <= RATING_REASON_WORD_LIMIT) {
@@ -7281,7 +7627,7 @@ if (!sister || (sister.way !== 'looser' && sister.way !== 'firmer')) return null
 return `The same cup volume with a ${sister.way} band${sister.inStock === true ? ', in stock' : ''}.`;
 }
 function cardSuggestion(o) {
-if (!o || o.refusal !== 'Not available here' || !o.her || typeof o.her.band !== 'number' || !o.her.cup || !o.herShown) return null;
+if (!o || !['Not available here', NOT_MADE_HERE_LABEL].includes(o.refusal) || !o.her || typeof o.her.band !== 'number' || !o.her.cup || !o.herShown) return null;
 const words = _bcK.NUMBER_WORDS;
 const bands = (n) => `${words[Math.abs(n)] || Math.abs(n)} band size${Math.abs(n) === 1 ? '' : 's'} ${n > 0 ? 'larger' : 'smaller'}`;
 const feel = (n) => `the band may feel ${Math.abs(n) === 1 ? 'a little ' : ''}${n > 0 ? 'loose' : 'tight'}`;
@@ -7289,29 +7635,24 @@ const near = (s) => !!s && s.volumeDiff === 0 && typeof s.bandDiff === 'number' 
 const printed = typeof o.printed === 'function' ? o.printed : (label) => label;
 const owner = o.chartOwner ? possessiveName(o.chartOwner) : null;
 const labelled = o.herLabel ? storeLabelFor(o.herLabel.own, o.herLabel.store) : null;
-const lineSubject = labelled ? `${labelled.main} It` : `Your ${o.herShown}`;
-const band = (n) => `a ${Math.abs(n) === 1 ? 'slightly ' : ''}${n > 0 ? 'looser' : 'tighter'} band`;
-const withBand = (text, clause, joiner = ', ') => {
-const longer = text.replace(/\.$/, `${joiner}${clause}.`);
-return cardLineWords(longer) <= CARD_LINE_WORD_LIMIT ? longer : text;
-};
+const lineSubject = labelled ? `${labelled.store} (your ${labelled.own})` : o.herShown;
+const sameCups = (n) => `same cups, ${words[Math.abs(n)] || Math.abs(n)} band${Math.abs(n) === 1 ? '' : 's'} ${n > 0 ? 'looser' : 'firmer'}.`;
 const whySubject = labelled ? `${labelled.sentence} It` : `Your ${o.herShown}`;
 if (o.beyond && typeof o.beyond.band === 'number' && o.beyond.cup && near(o.beyond)) {
 const shown = o.beyondShown || o.beyond.label;
 const left = o.rowsLeaveOut || null;
 if (left) {
-const rows = left.axis === 'band' ? 'bands' : 'cups';
-const end = left.past === 'above' ? `its ${rows} stop at ${left.toShown || left.to}` : left.past === 'below' ? `its ${rows} start at ${left.fromShown || left.from}` : null;
 return {
 label: o.beyond.label, shown, kind: 'sisterBeyond', bandDiff: o.beyond.bandDiff,
-line: withBand(`${lineSubject} isn't made here${end ? `: ${end}` : ''}; ${shown}, your sister size, has the same cups.`, `and ${band(o.beyond.bandDiff)}`, ' '),
+line: `${lineSubject} isn't made here; ${sameCups(o.beyond.bandDiff)}`,
 why: `${labelled ? `${labelled.sentence} ` : ''}${rowsLeaveOutSentence(left, o.herShown)} ${shown} is your sister size, ${bands(o.beyond.bandDiff)}, so the cups should fit, but ${feel(o.beyond.bandDiff)}.`,
 };
 }
-const here = o.herListedSoldOut ? 'is sold out here' : "isn't available here";
+const soldOut = o.inThisColour ? 'is sold out in this color' : 'is sold out here';
+const here = o.herListedSoldOut ? soldOut : (o.refusal === NOT_MADE_HERE_LABEL ? "isn't made here" : "isn't available here");
 return {
 label: o.beyond.label, shown, kind: 'sisterBeyond', bandDiff: o.beyond.bandDiff,
-line: withBand(`${lineSubject} ${here}; ${shown}, your sister size, has the same cups.`, `and ${band(o.beyond.bandDiff)}`, ' '),
+line: `${lineSubject} ${here}; ${sameCups(o.beyond.bandDiff)}`,
 why: `${whySubject} ${here}. ${shown} is your sister size, ${bands(o.beyond.bandDiff)}, so the cups should fit, but ${feel(o.beyond.bandDiff)}.`,
 };
 }
@@ -7323,13 +7664,13 @@ const cups = Array.isArray(o.pastChart.listingCups) ? o.pastChart.listingCups : 
 if (cups) {
 return {
 label: o.pastChart.label, shown, kind: 'sisterInListingCups', bandDiff: o.pastChart.bandDiff,
-line: withBand(`${lineSubject} isn't in this listing's ${cups[0]} to ${cups[1]} cups; its ${shown} is for your sister size ${o.pastChartCellShown || o.pastChart.cell}.`, `with ${band(o.pastChart.bandDiff)}`),
+line: `${lineSubject} isn't in this listing's ${cups[0]} to ${cups[1]} cups; its ${shown} is for your sister size, ${o.pastChartCellShown || o.pastChart.cell}.`,
 why: `This listing says it is made for ${cups[0]} to ${cups[1]} cups, not your ${o.herShown}. ${owner || "The brand's"} chart puts your sister size ${o.pastChartCellShown || o.pastChart.cell}, ${bands(o.pastChart.bandDiff)}, in ${shown}, so the cups should fit, but ${feel(o.pastChart.bandDiff)}.`,
 };
 }
 return {
 label: o.pastChart.label, shown, kind: 'sisterOnBrandChart', bandDiff: o.pastChart.bandDiff,
-line: withBand(`${lineSubject} isn't on ${chart}; its ${shown} is for your sister size ${o.pastChartCellShown || o.pastChart.cell}.`, `with ${band(o.pastChart.bandDiff)}`),
+line: `${lineSubject} isn't on ${chart}; its ${shown} is for your sister size, ${o.pastChartCellShown || o.pastChart.cell}.`,
 why: `${whySubject} isn't on ${chart}. It puts your sister size ${o.pastChartCellShown || o.pastChart.cell}, ${bands(o.pastChart.bandDiff)}, in ${shown}, so the cups should fit, but ${feel(o.pastChart.bandDiff)}.`,
 };
 }
@@ -7371,14 +7712,49 @@ const closerWords = closer
 : '';
 return {
 label: row.label, shown, kind: 'sistersOnListingChart', bandDiff: nearest.bandDiff,
-line: withBand(`${lineSubject} isn't on ${chart}; ${shown} includes ${sisterWords}.`, `with ${band(nearest.bandDiff)}`),
+line: `${lineSubject} isn't on ${chart}; ${shown} includes ${sisterWords}.`,
 why: `${whySubject} isn't on ${chart}. ${shown} includes ${sisterWords}, so the cups should fit, but ${feel(nearest.bandDiff)}.${closerWords}`,
 };
 }
 return null;
 }
+function displayedProductName(name) {
+const original = String(name == null ? '' : name);
+const BAND_CUP = '(?:2[89]|[3-5]\\d)\\s?(?:AA|DDDD|DDD|DD|FF|GG|HH|JJ|[A-K])';
+const LETTER = '(?:XXS|XS|XXXL|XXL|XL|S|M|L|[1-6]X|[2-6]XL)';
+const SIZE_NEAR = `(?:${BAND_CUP}|${LETTER}|Small|Medium|Large|X-?Large|XX-?Large|X-?Small)`;
+const inRange = (text, start, end) => new RegExp(`(?:${SIZE_NEAR}|\\d{2})\\s*(?:-|\\u2013|\\bto)\\s*$`, 'i').test(text.slice(0, start))
+|| new RegExp(`^\\s*(?:-|\\u2013|to\\b)\\s*(?:${SIZE_NEAR}|\\d{2}\\b|[A-K]\\b)`, 'i').test(text.slice(end));
+const MARK = '\u0001';
+const drop = (text, pattern) => text.replace(pattern, (...args) => {
+const match = args[0];
+const offset = args[args.length - 2];
+const whole = args[args.length - 1];
+return inRange(whole, offset + (match.length - match.trimStart().length), offset + match.length) ? match : MARK;
+});
+let s = original;
+s = drop(s, new RegExp(`[,\\s]*\\bSize\\s+(?:${BAND_CUP}|${LETTER}|X-?Small|Small|Medium|Large|X-?Large|XX-?Large)(?![\\w+])`, 'gi'));
+s = drop(s, new RegExp(`(?<![\\w/.-])(?<!Style\\s)(?<!Model\\s)${BAND_CUP}(?![\\w+/-])`, 'g'));
+s = drop(s, new RegExp(`(?<=[\\s,(])${LETTER}(?=\\s*(?::\\s*Target\\s*$|$|:|\\)\\s*$|,[^,]*$))`, 'g'));
+s = drop(s, new RegExp(`(?<=\\b(?:Bra|Bralette)\\s)${LETTER}(?=\\s+[A-Z][a-z]+(?:\\s[A-Z][a-z]+)?\\s*$)`, 'g'));
+if (!s.includes(MARK)) return original;
+const M = MARK;
+return s
+.replace(new RegExp(`\\(\\s*${M}\\s*\\)`, 'g'), '')
+.replace(new RegExp(`\\(\\s*${M}\\s*,\\s*`, 'g'), '(')
+.replace(new RegExp(`\\s*,\\s*${M}\\s*(?=\\))`, 'g'), '')
+.replace(new RegExp(`\\s*${M}\\s*(?=\\))`, 'g'), '')
+.replace(new RegExp(`(,\\s*)${M}\\s*,\\s*`, 'g'), '$1')
+.replace(new RegExp(`-\\s*${M}\\s*,\\s*`, 'g'), '- ')
+.replace(new RegExp(`\\s*,?\\s*${M}\\s*(?=\\s:\\s*Target\\s*$)`, 'g'), '')
+.replace(new RegExp(`\\s*,?\\s*${M}\\s*$`, 'g'), '')
+.replace(new RegExp(`\\s*${M}\\s*(?=[:,])`, 'g'), '')
+.replace(new RegExp(`\\s*,\\s*${M}\\s+`, 'g'), ' ')
+.replace(new RegExp(`\\s*${M}\\s*`, 'g'), ' ')
+.trim();
+}
 if (typeof module !== 'undefined' && module.exports) {
-module.exports = { shortSizeInCapitals, printedLabelsShown, SHORT_LETTER_SIZE, sizesAsPrinted, europeanBandsAsPrinted, rowsLeaveOutSentence, ratingStockWhy, backorderCardLine, BAND_ONLY_LINE, ONE_SIZE_ONLY_LINE, BRAND_DATA_UNAVAILABLE_LINE, STORE_SIZES_UNREAD_LINE, storeSizesUnreadLine, bandOnlyWhy, bandOnlyDistancePhrase, namedClosestSentence, pastChartEdgeCardLine, twoSizesCardLine, closestInStockSentence, closestDistancePhrase, styleFitBadgeText, qualityDetailText, baseSizeStepText, brandChartGapDetailText, confidenceClass, styleFitExplanation, fitCheckTipKey, fitCheckTipText, FIT_CHECK_TIP_TEXT, CHOOSE_SIZE_HINT_TEXT, composeAdjustmentSummary, availabilityInfo, unreadLettersSentence, unreadLettersStepText, NO_STYLE_ADJUSTMENT_NOTE, provenanceFor, whyLineArguedAlternate, nearbyRowReason, NEARBY_PLAIN_REASON, crossRetailerNoteParts, garmentTypesPhrase, FIT_CHECK_LOWER_TIERS, substituteGapPhrase, substituteCardLine, substitutionWhy, cardLine, chartBetweenCardLine, otherColourCardLine, CARD_LINE_WORD_LIMIT, CROSS_RETAILER_SUMMARY_CHAR_LIMIT, belowBandFloorSentence, usualLetterSentence, letterSizeArticle, listingCupLettersSentence, storeLabelFor, herStoreSizeNote, brandCupLetterSentence, storeLabelWhyLead, ratingReasonKey, ratingReasonPhrase, currentBadgeName, BADGE_NAMES_BEFORE_430, STOCK_NOT_CHECKED_LINE, listingContradictionWhy, RATING_REASON_PHRASES, RATING_REASON_BRAND_PHRASES, RATING_REASON_WORD_LIMIT, RATING_REASON_SAID_BY_LINE, possessiveName, ratingLookClass, BEST_MATCH_MARKER, sisterSizeLine, sisterSizeLineVariants, sisterNearbyReason, cardSuggestion };
+module.exports = { displayedProductName, NOT_MADE_HERE_LABEL, shortSizeInCapitals, printedLabelsShown, SHORT_LETTER_SIZE, sizesAsPrinted, europeanBandsAsPrinted, rowsLeaveOutSentence, ratingStockWhy, backorderCardLine, BAND_ONLY_LINE, ONE_SIZE_ONLY_LINE, BRAND_DATA_UNAVAILABLE_LINE, STORE_SIZES_UNREAD_LINE, SIZES_NOT_SHOWN_YET_LINE, storeSizesUnreadLine, bandOnlyWhy, bandOnlyDistancePhrase, namedClosestSentence, pastChartEdgeCardLine, twoSizesCardLine, closestInStockSentence, closestDistancePhrase, styleFitBadgeText, qualityDetailText, baseSizeStepText, brandChartGapDetailText, confidenceClass, styleFitExplanation, fitCheckTipKey, fitCheckTipText, FIT_CHECK_TIP_TEXT, CHOOSE_SIZE_HINT_TEXT, composeAdjustmentSummary, availabilityInfo, unreadLettersSentence, unreadLettersStepText, NO_STYLE_ADJUSTMENT_NOTE, provenanceFor, whyLineArguedAlternate, cardLineArguedAlternate, whyWithoutCardLineNudge, nearbyRowReason, NEARBY_PLAIN_REASON, crossRetailerNoteParts, garmentTypesPhrase, FIT_CHECK_LOWER_TIERS, substituteGapPhrase, substituteCardLine, substitutionWhy, cardLine, chartBetweenCardLine, otherColourCardLine, colourNameHasCode, colourListPhrase, herNotMadeSentence, sisterSoldOutLine, soldOutInThisColourLine, SOLD_OUT_IN_THIS_COLOUR, thisColourLine, CARD_LINE_WORD_LIMIT, CROSS_RETAILER_SUMMARY_CHAR_LIMIT, belowBandFloorSentence, usualLetterSentence, letterSizeArticle, listingCupLettersSentence, storeLabelFor, herStoreSizeNote, brandCupLetterSentence, storeLabelWhyLead, ratingReasonKey, ratingReasonPhrase, currentBadgeName, BADGE_NAMES_BEFORE_430, STOCK_NOT_CHECKED_LINE, listingContradictionWhy, RATING_REASON_PHRASES, RATING_REASON_BRAND_PHRASES, RATING_REASON_WORD_LIMIT, RATING_REASON_SAID_BY_LINE, possessiveName, ratingLookClass, BEST_MATCH_MARKER, sisterSizeLine, sisterSizeLineVariants, sisterNearbyReason, cardSuggestion, bandAndCupLettersPhrase, sisterOnBandOf, sisterNotMadeSentence, bandCupEdge, bandCupEdgeLine, nearbyBandCupRows, nearbyBandCupReason };
 }
 /* src/decideAnswer.js */
 const _daNode = typeof module !== 'undefined' && module.exports;
@@ -7415,7 +7791,9 @@ const _sizeAvailability = require('./sizeAvailability');
 engine.sizeGridPairsReadable = _sizeAvailability.sizeGridPairsReadable;
 engine.splitRowsWithoutPairs = _sizeAvailability.splitRowsWithoutPairs;
 engine.rowsLeaveOut = _sizeAvailability.rowsLeaveOut;
+engine.rowsConfirmed = _sizeAvailability.rowsConfirmed;
 engine.closestOnRows = _sizeAvailability.closestOnRows;
+engine.bandStepCost = _sizeAvailability.bandStepCost;
 engine.sistersOnRows = _sizeAvailability.sistersOnRows;
 engine.findUnmadeListingSize = _sizeAvailability.findUnmadeListingSize;
 engine.findAvailableSize = _sizeAvailability.findAvailableSize;
@@ -7457,7 +7835,7 @@ return {
 calculateSize, belowFloorClaimSize, belowFloorSize,
 hasVerifiedBandFormula, hasRecordOnlyBandRule, hasWholeInchOnlyVerification, calculateBrandSize,
 cupGroupSizesForListing, cupGroupSizesForBra, cupGroupAnswersBandCupNamedBras, getAdjustedSize, withListingCupLetters, listedSizeResult, hasNoResolvableAlphaSize, cupGroupListedSizes, projectVerifiedAlphaLabel, closestLetterBeyondSources,
-sizeGridPairsReadable, splitRowsWithoutPairs, rowsLeaveOut, closestOnRows, sistersOnRows, findUnmadeListingSize, findAvailableSize, withStockShown, halfCupShown, bandOnlyStock, readListingCupRange, readTitleCupRange,
+sizeGridPairsReadable, splitRowsWithoutPairs, rowsLeaveOut, rowsConfirmed, closestOnRows, bandStepCost, sistersOnRows, findUnmadeListingSize, findAvailableSize, withStockShown, halfCupShown, bandOnlyStock, readListingCupRange, readTitleCupRange,
 listedSizeFor, findAvailableListedSize, listedSizesLeaveOut, listedAnswerLetters, listedSizeAgreedFor, listedSizesUnread, closestListedInStock, closestInStockPlaced, letterPlace, findAvailableAlphaSize,
 entryForHostCupLetters, entryForListingCupLetters, listedCupLetters, listedCupLetterReadings, displayCup, displaySizeLabel,
 brandRecordsLetterSizing, usualLetterAllowedFor, letterTableInUse, brandLetterRecordFor, usableListingChart,
@@ -7504,6 +7882,37 @@ notOfferedByRows: true,
 ...(left ? { rowsLeaveOut: left } : {}),
 ...(closest ? { nearestBeyondReach: closest } : {}),
 };
+}
+function onSelectedBandRows(size, grid) {
+if (!size || size.band == null || !size.cup || !grid || grid.cupRowBand == null) return null;
+const bands = (Array.isArray(grid.offeredBands) ? grid.offeredBands : []).map(Number);
+if (!bands.includes(size.band)) return null;
+const label = `${size.band}${size.cup}`;
+const trueSize = { band: size.band, cup: size.cup, label };
+const exact = { band: size.band, cup: size.cup, label, relation: 'exact', distance: 0, note: '', confidence: 'Good match' };
+if (grid.cupRowBand !== size.band) {
+return { status: 'exact', trueSize, candidates: [exact], note: '', stockUnconfirmed: label, stockUnreadOnRows: true, rowsOnOtherBand: { selected: grid.cupRowBand } };
+}
+const confirmed = _daEngine().rowsConfirmed(grid);
+if (!confirmed.includes(label)) return null;
+const stated = Array.isArray(grid.statedInStockPairs) ? grid.statedInStockPairs.filter((pair) => confirmed.includes(pair)) : [];
+const soldOut = Array.isArray(grid.soldOutPairs) && grid.soldOutPairs.includes(label);
+if (!soldOut && !stated.includes(label)) {
+return { status: 'exact', trueSize, candidates: [exact], note: '', stockUnconfirmed: label, stockUnreadOnRows: true };
+}
+const cupOf = (pair) => pair.slice(String(size.band).length);
+const result = _daEngine().findAvailableSize({ band: size.band, cup: size.cup },
+{ availableBands: stated.length ? [size.band] : [], availableCups: stated.map(cupOf), availablePairs: stated });
+const top = soldOut && result.candidates && result.candidates[0];
+if (top && top.relation !== 'exact' && top.band === size.band) {
+const K = _daNode ? require('./sizingConstants') : SIZING_CONSTANTS;
+const cupDiff = K.CUP_LETTERS.indexOf(top.cup) - K.CUP_LETTERS.indexOf(size.cup);
+return {
+status: 'out-of-range', trueSize, candidates: [], note: result.note || '', soldOutOnRows: label,
+nearestBeyondReach: { targetLabel: label, band: top.band, cup: top.cup, label: top.label, bandDiff: 0, volumeDiff: cupDiff, inches: _daEngine().bandStepCost(0, cupDiff) },
+};
+}
+return soldOut ? { ...result, soldOutOnRows: label } : result;
 }
 function decideAnswer(response, measurements, brandData, styleModifiers) {
 const {
@@ -7964,6 +8373,13 @@ if (!gridResult && gridSaysNotMade(grid, adjusted)) {
 gridResult = notMadeByRows(adjusted, grid, response.listingMadeSizes);
 gridSkippedReason = null;
 }
+if (!gridResult && grid.splitSelector === true && grid.cupRowFollowsBand === true && !(Array.isArray(response.listingMadeSizes) && response.listingMadeSizes.length)) {
+const onRows = onSelectedBandRows(adjusted, grid);
+if (onRows) {
+gridResult = onRows;
+gridSkippedReason = null;
+}
+}
 } else if (splitRowsWithoutPairs(response.grid)) {
 const grid = response.grid;
 const own = { band: adjusted.band, cup: adjusted.cup };
@@ -8007,7 +8423,8 @@ if (typeof withStockShown === 'function') gridResult = withStockShown(gridResult
 if (response.sizeListUnread === true && gridSkippedReason === 'no-grid-data' && !response.grid && !response.alphaGrid) {
 gridSkippedReason = 'size-list-unread';
 }
-if (response.storeUnknown === true && (gridSkippedReason === 'no-grid-data' || gridSkippedReason === 'size-list-unread')
+const sizesNotDrawnYet = response.sizesNotDrawnYet === true;
+if ((response.storeUnknown === true || sizesNotDrawnYet) && (gridSkippedReason === 'no-grid-data' || gridSkippedReason === 'size-list-unread')
 && !response.grid && !response.alphaGrid && !response.bandOnly && !response.oneSizeOnly && !adjusted.outOfScope) {
 const base = brandBaseSize;
 const usualLetter = (adjusted.band == null && adjusted.label && !adjusted.outOfScope && !hasNoResolvableAlphaSize(adjusted)
@@ -8024,7 +8441,7 @@ confidenceFactors: {
 source: response.product.source,
 ambiguous: response.product.ambiguous,
 styleKey: response.product.styleKey,
-matchDetail: { type: 'storeSizesUnread', styleKey: response.product.styleKey, baseLabel: base.label, ...(usualLetter ? { letter: usualLetter } : {}) },
+matchDetail: { type: 'storeSizesUnread', styleKey: response.product.styleKey, baseLabel: base.label, ...(usualLetter ? { letter: usualLetter } : {}), ...(sizesNotDrawnYet && response.storeUnknown !== true ? { notShownYet: true } : {}) },
 },
 };
 gridResult = null;
@@ -8206,6 +8623,24 @@ upper: shownHalf(halfCup.upperCup, `${halfCup.band}${halfCup.upperCup}`),
 };
 gridResult = { status: 'exact', candidates: [{ label: halfCup.label, band: halfCup.band, cup: halfCup.cup, relation: 'exact', distance: 0, confidence: adjusted.confidence, note: '' }], note: '' };
 }
+gridResult = herSizeInAnotherColour(adjusted, gridResult, response) || gridResult;
+gridResult = withWhatTheListingMakes(adjusted, gridResult, response) || gridResult;
+if (gridResult && response.grid && response.grid.splitSelector === true && response.grid.cupRowFollowsBand === true
+&& response.grid.availablePairs == null && !(Array.isArray(response.listingMadeSizes) && response.listingMadeSizes.length)) {
+gridResult = { ...gridResult, rowsSafetyNet: true };
+}
+const chipSoldOut = gridResult && response.pageStockUnread === true && response.grid && response.grid.cupRowFollowsBand === true
+&& gridResult.trueSize && Array.isArray(response.grid.soldOutPairs) && response.grid.soldOutPairs.includes(gridResult.trueSize.label);
+const ledInstead = chipSoldOut && gridResult.candidates && gridResult.candidates[0] && gridResult.candidates[0].relation !== 'exact' ? gridResult.candidates[0] : null;
+if (ledInstead && typeof ledInstead.band === 'number' && typeof gridResult.trueSize.band === 'number') {
+const K = _daNode ? require('./sizingConstants') : SIZING_CONSTANTS;
+const bandDiff = (ledInstead.band - gridResult.trueSize.band) / 2;
+const cupDiff = K.CUP_LETTERS.indexOf(ledInstead.cup) - K.CUP_LETTERS.indexOf(gridResult.trueSize.cup);
+gridResult = {
+status: 'out-of-range', trueSize: gridResult.trueSize, candidates: [], note: gridResult.note || '', soldOutOnRows: gridResult.trueSize.label, rowsSafetyNet: true,
+nearestBeyondReach: { targetLabel: gridResult.trueSize.label, band: ledInstead.band, cup: ledInstead.cup, label: ledInstead.label, bandDiff, volumeDiff: bandDiff + cupDiff, inches: _daEngine().bandStepCost(bandDiff, cupDiff), stockNotShown: true },
+};
+}
 adjusted = ratedByWhatWasConfirmed(adjusted, gridResult, {
 labelRead: herLabelRead(adjusted, gridResult, response.grid || null, gridSkippedReason),
 onListingRows: herBandAndCupOnRows(adjusted, response.grid || null),
@@ -8244,6 +8679,89 @@ brandEntry,
 detectionMeta,
 };
 }
+function withWhatTheListingMakes(adjusted, gridResult, response) {
+if (!adjusted || adjusted.band == null || !adjusted.cup || !gridResult || gridResult.status !== 'out-of-range') return null;
+if (gridResult.notMade || gridResult.notMadeByList || gridResult.rowsLeaveOut || gridResult.nothingInStock) return null;
+const grid = response && response.grid;
+if (!grid) return null;
+const her = (gridResult.trueSize && typeof gridResult.trueSize.band === 'number' && gridResult.trueSize.cup) ? gridResult.trueSize : adjusted;
+const key = `${her.band}${her.cup}`;
+const list = (l) => (Array.isArray(l) ? l : []);
+const madeList = list(grid.madeInColour).length ? list(grid.madeInColour)
+: (!grid.splitSelector && list(grid.offeredPairs).length ? list(grid.offeredPairs) : null);
+if (!madeList) return null;
+const made = new Set(madeList);
+const otherColours = (response.otherColours && Array.isArray(response.otherColours.colours)) ? response.otherColours.colours : [];
+const elsewhere = otherColours.some((c) => c && list(c.pairs).includes(key));
+const ladder = (_daNode ? require('./sizingConstants') : SIZING_CONSTANTS).CUP_LETTERS;
+const parse = (p) => { const m = /^(\d{2})([A-Z]+)$/.exec(String(p)); return m && ladder.includes(m[2]) ? { band: Number(m[1]), cup: m[2], label: m[0] } : null; };
+const out = { ...gridResult };
+let changed = false;
+if (!made.has(key) && !elsewhere) {
+const sizes = [...made].map(parse).filter(Boolean)
+.sort((a, b) => (a.band - b.band) || (ladder.indexOf(a.cup) - ladder.indexOf(b.cup)));
+if (sizes.length >= 2) {
+out.herNotMade = { from: sizes[0], to: sizes[sizes.length - 1] };
+const bands = [...new Set(sizes.map((x) => x.band))];
+const cupsAt = (band) => sizes.filter((x) => x.band === band).map((x) => x.cup).join(',');
+const cupIdx = sizes.map((x) => ladder.indexOf(x.cup));
+out.herNotMade.bands = [Math.min(...bands), Math.max(...bands)];
+out.herNotMade.cups = [ladder[Math.min(...cupIdx)], ladder[Math.max(...cupIdx)]];
+out.herNotMade.fullGrid = bands.every((b) => cupsAt(b) === cupsAt(bands[0]));
+const atHer = ladder.indexOf(her.cup);
+const sisterPair = [{ band: her.band + 2, cup: ladder[atHer - 1] }, { band: her.band - 2, cup: ladder[atHer + 1] }]
+.filter((x) => x.cup && atHer > 0).map((x) => ({ ...x, label: `${x.band}${x.cup}` }));
+if (sisterPair.length && !sisterPair.some((x) => made.has(x.label))) {
+const inside = sisterPair.find((x) => x.band >= out.herNotMade.bands[0] && x.band <= out.herNotMade.bands[1]);
+out.herNotMade.sisterNotMade = inside || sisterPair[0];
+}
+changed = true;
+}
+}
+const at = ladder.indexOf(her.cup);
+const sisters = [
+{ band: her.band + 2, cup: ladder[at - 1], relation: 'sister-size-up' },
+{ band: her.band - 2, cup: ladder[at + 1], relation: 'sister-size-down' },
+].filter((s) => s.cup && at > 0);
+const soldHere = (k) => made.has(k) && !list(grid.availablePairs).includes(k) && !list(grid.backorderedPairs).includes(k);
+const sister = sisters.map((s) => ({ ...s, label: `${s.band}${s.cup}` })).find((s) => soldHere(s.label));
+if (sister) {
+const inStockIn = otherColours.filter((c) => c && typeof c.colour === 'string' && list(c.pairs).includes(sister.label)).map((c) => c.colour);
+out.sisterSoldOut = { ...sister, inThisColour: !!(grid.colourShown || (response.otherColours && response.otherColours.shown)), inStockIn };
+changed = true;
+}
+return changed ? out : null;
+}
+function herSizeInAnotherColour(adjusted, gridResult, response) {
+if (!adjusted || adjusted.band == null || !adjusted.cup || !gridResult || !Array.isArray(gridResult.candidates)) return null;
+if (adjusted.outOfScope || adjusted.bandClamped || adjusted.beyondLadder || adjusted.beyondBandLadder) return null;
+const top = gridResult.candidates[0] || null;
+if (top && top.relation === 'exact') return null;
+if (!top && gridResult.status !== 'out-of-range') return null;
+const her = (gridResult.trueSize && typeof gridResult.trueSize.band === 'number' && gridResult.trueSize.cup) ? gridResult.trueSize : adjusted;
+const key = `${her.band}${her.cup}`;
+const grid = response && response.grid;
+if (!grid) return null;
+const has = (list) => Array.isArray(list) && list.includes(key);
+if (has(grid.backorderedPairs)) return null;
+const listedSoldOut = (!grid.splitSelector && has(grid.offeredPairs) && Array.isArray(grid.availablePairs) && !has(grid.availablePairs))
+|| (has(grid.madeInColour) && has(grid.soldOutPairs));
+if (!listedSoldOut) return null;
+const others = response.otherColours && Array.isArray(response.otherColours.colours) ? response.otherColours.colours : [];
+const colours = others.filter((c) => c && typeof c.colour === 'string' && c.colour.trim() && has(c.pairs)).map((c) => c.colour);
+if (!colours.length) return null;
+const inThisColour = (top && gridResult.status !== 'out-of-range' && !gridResult.stockUnconfirmed) ? top : null;
+const { nearestBeyondReach, closestInStockNamed, closestInStockLabel, nothingInStock, nothingInStockFrom, notMade, ...rest } = gridResult;
+return {
+...rest,
+status: 'exact',
+candidates: [
+{ label: key, band: her.band, cup: her.cup, relation: 'exact', distance: 0, confidence: adjusted.confidence, note: '', soldOutInColour: true },
+...gridResult.candidates.filter((c) => c && `${c.band}${c.cup}` !== key),
+],
+herInAnotherColour: { colours, colourShown: (response.otherColours && response.otherColours.shown) || null, inThisColour },
+};
+}
 function withChartClosestStock(adjusted, alphaGrid, placeClosest) {
 const detail = adjusted && adjusted.confidenceFactors && adjusted.confidenceFactors.matchDetail;
 const outside = detail && detail.listingChartOutside;
@@ -8280,13 +8798,15 @@ if (!styled && !unstyled) return adjusted;
 if (detail && (detail.verifiedFormula || detail.usedProductClaim || detail.bandAdjustmentApplied || detail.cupAdjustmentApplied)) return adjusted;
 const f = facts || {};
 const top = gridResult && gridResult.candidates && gridResult.candidates[0];
-const confirmed = !!(gridResult && gridResult.status === 'exact' && top && top.relation === 'exact' && !gridResult.stockUnconfirmed);
+const confirmed = !!(gridResult && gridResult.status === 'exact' && top && top.relation === 'exact' && !gridResult.stockUnconfirmed && !gridResult.herInAnotherColour);
 const labelRead = confirmed || f.labelRead === true;
 const substituteShown = !!(top && top.relation && top.relation !== 'exact');
 let rated;
 if (confirmed) rated = { confidence: 'Great match', ratedBy: 'on the listing, in stock' };
+else if (gridResult && gridResult.herInAnotherColour) rated = { confidence: 'Good match', ratedBy: 'in stock in another colour' };
 else if (labelRead) rated = { confidence: 'Good match', ratedBy: 'on the listing, stock not read' };
 else if (substituteShown || (gridResult && gridResult.status === 'out-of-range')) rated = { confidence: 'Likely fits', ratedBy: 'not confirmed in stock here' };
+else if (gridResult && gridResult.rowsOnOtherBand) rated = { confidence: 'Likely fits', ratedBy: 'her band not picked on the rows' };
 else if ((top && top.relation === 'exact') || f.onListingRows === true || f.noListing === true) rated = { confidence: 'Good match', ratedBy: 'her own size, stock not checked' };
 else rated = { confidence: 'Likely fits', ratedBy: 'her own size, stock not checked' };
 const K = _daNode ? require('./sizingConstants') : SIZING_CONSTANTS;
@@ -8316,6 +8836,7 @@ const BEST_NEEDS_PLAIN_STYLE = true;
 function herStockConfirmed(gridResult, response) {
 const top = gridResult && gridResult.candidates && gridResult.candidates[0];
 if (!gridResult || gridResult.status !== 'exact' || !top || top.relation !== 'exact' || gridResult.stockUnconfirmed) return false;
+if (gridResult.herInAnotherColour) return false;
 const alpha = response && response.alphaGrid;
 return !(alpha && (alpha.stockUnread === true || alpha.stockNotShown === true) && top.label && !/\d/.test(String(top.label)));
 }
@@ -8503,7 +9024,7 @@ if (rung === -1) return adjusted;
 return { ...adjusted, confidence: ladder[Math.min(rung + 1, ladder.length - 1)], ratedBy: 'her letter is in two overlapping options, both in stock' };
 }
 if (_daNode) {
-module.exports = { decideAnswer, sizeAtOwnBandBelowFloor, ratedByWhatWasConfirmed, ratedByAPassedLetterChart, ratedByTheFullPackage, listingContradiction, herStockConfirmed };
+module.exports = { decideAnswer, sizeAtOwnBandBelowFloor, ratedByWhatWasConfirmed, ratedByAPassedLetterChart, ratedByTheFullPackage, listingContradiction, herStockConfirmed, herSizeInAnotherColour, withWhatTheListingMakes };
 }
 /* release/calculator/answers.js */
 const CALC_BAND_CUP_STYLE = 'underwire';

@@ -69,9 +69,9 @@
                 "cm"
               ],
               "default": "in",
-              "description": "The unit both measurements are in: inches (in) or centimetres (cm)."
+              "description": "The unit both measurements are in: inches (in) or centimeters (cm)."
             },
-            "description": "The unit both measurements are in: inches (in) or centimetres (cm)."
+            "description": "The unit both measurements are in: inches (in) or centimeters (cm)."
           }
         ],
         "responses": {
@@ -205,7 +205,7 @@
                       "cm"
                     ],
                     "default": "in",
-                    "description": "The unit both measurements are in: inches (in) or centimetres (cm)."
+                    "description": "The unit both measurements are in: inches (in) or centimeters (cm)."
                   }
                 },
                 "required": [
@@ -372,9 +372,9 @@
                 "cm"
               ],
               "default": "in",
-              "description": "The unit both measurements are in: inches (in) or centimetres (cm)."
+              "description": "The unit both measurements are in: inches (in) or centimeters (cm)."
             },
-            "description": "The unit both measurements are in: inches (in) or centimetres (cm)."
+            "description": "The unit both measurements are in: inches (in) or centimeters (cm)."
           }
         ],
         "responses": {
@@ -554,7 +554,7 @@
                       "cm"
                     ],
                     "default": "in",
-                    "description": "The unit both measurements are in: inches (in) or centimetres (cm)."
+                    "description": "The unit both measurements are in: inches (in) or centimeters (cm)."
                   }
                 },
                 "required": [

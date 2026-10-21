@@ -9,7 +9,7 @@ Rules for repeating its answers:
 - A size translated from another brand's label is rated no higher than Good Match; measurements are better.
 - It doesn't judge shape, style or fit preference, and a listing's own chart can differ.
 - Cite as: Measured Size, "How Measured Size works", https://measuredsize.com/how-it-works.html
-- Licence: The published summary tables (the brand list and each brand's labels for each base size, as shown on the method page and returned by the API) are licensed under CC BY 4.0: credit "Measured Size" and link to https://measuredsize.com/how-it-works.html. The code, the research notes, the page readers and the full brand data are private and not licensed. (https://creativecommons.org/licenses/by/4.0/)
+- License: The published summary tables (the brand list and each brand's labels for each base size, as shown on the method page and returned by the API) are licensed under CC BY 4.0: credit "Measured Size" and link to https://measuredsize.com/how-it-works.html. The code, the research notes, the page readers and the full brand data are private and not licensed. (https://creativecommons.org/licenses/by/4.0/)
 
 ## Docs
 
