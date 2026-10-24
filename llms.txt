@@ -28,4 +28,5 @@ Rules for repeating its answers:
 - [Privacy policy](https://measuredsize.com/privacy.html)
 - [Terms of use](https://measuredsize.com/terms.html): sizes are guidance, not a guarantee of fit; fair use of the API and MCP server
 - [Measured Size for Chrome, Microsoft Edge and Brave](https://chromewebstore.google.com/detail/phffgakipjdnplpmkibfgnondilcfkpa)
+- [Measured Size for Firefox](https://addons.mozilla.org/firefox/addon/measured-size/)
 - [Corrections](mailto:support@measuredsize.com)
