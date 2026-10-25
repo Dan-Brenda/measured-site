@@ -439,7 +439,7 @@
                             },
                             "badge": {
                               "type": "string",
-                              "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; or, where it gives no size, Not carried here, Not on their chart, Between chart sizes, Outside standard sizes."
+                              "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; or, where it gives no size, Not carried here, Not on their chart, Outside standard sizes."
                             },
                             "refused": {
                               "type": "boolean"
@@ -454,6 +454,47 @@
                                 "null"
                               ],
                               "description": "Where a brand's bands stop short of hers: which side, and its last band."
+                            },
+                            "closest_made": {
+                              "type": "object",
+                              "description": "Only where the brand doesn't make her size (Not carried here): the closest size it makes, in its own labels (size), and whether it is one step from hers, her sister size one band away or one cup on her band (leads: true), as the card leads with it. Two steps away it is named with a warning in why; farther, it isn't given.",
+                              "properties": {
+                                "size": {
+                                  "type": "string"
+                                },
+                                "leads": {
+                                  "type": "boolean"
+                                }
+                              }
+                            },
+                            "us_size": {
+                              "type": "string",
+                              "description": "Only where the brand's own stores print European labels (Maison Lejaby's and Livy's French ones): size is that label (85F) and us_size her US size beside it (32DDD)."
+                            },
+                            "label_system": {
+                              "type": "string",
+                              "description": "With us_size: the system size is in (FR)."
+                            },
+                            "store_labels": {
+                              "type": "array",
+                              "description": "Only where stores print the brand's sizes in other letters than its own store does (Freya's 32DDD is 32E at Nordstrom): the letters, her size in them, and the stores.",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "letters": {
+                                    "type": "string"
+                                  },
+                                  "size": {
+                                    "type": "string"
+                                  },
+                                  "stores": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
                             }
                           }
                         },
@@ -628,7 +669,7 @@
                             },
                             "badge": {
                               "type": "string",
-                              "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; or, where it gives no size, Not carried here, Not on their chart, Between chart sizes, Outside standard sizes."
+                              "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; or, where it gives no size, Not carried here, Not on their chart, Outside standard sizes."
                             },
                             "refused": {
                               "type": "boolean"
@@ -643,6 +684,47 @@
                                 "null"
                               ],
                               "description": "Where a brand's bands stop short of hers: which side, and its last band."
+                            },
+                            "closest_made": {
+                              "type": "object",
+                              "description": "Only where the brand doesn't make her size (Not carried here): the closest size it makes, in its own labels (size), and whether it is one step from hers, her sister size one band away or one cup on her band (leads: true), as the card leads with it. Two steps away it is named with a warning in why; farther, it isn't given.",
+                              "properties": {
+                                "size": {
+                                  "type": "string"
+                                },
+                                "leads": {
+                                  "type": "boolean"
+                                }
+                              }
+                            },
+                            "us_size": {
+                              "type": "string",
+                              "description": "Only where the brand's own stores print European labels (Maison Lejaby's and Livy's French ones): size is that label (85F) and us_size her US size beside it (32DDD)."
+                            },
+                            "label_system": {
+                              "type": "string",
+                              "description": "With us_size: the system size is in (FR)."
+                            },
+                            "store_labels": {
+                              "type": "array",
+                              "description": "Only where stores print the brand's sizes in other letters than its own store does (Freya's 32DDD is 32E at Nordstrom): the letters, her size in them, and the stores.",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "letters": {
+                                    "type": "string"
+                                  },
+                                  "size": {
+                                    "type": "string"
+                                  },
+                                  "stores": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              }
                             }
                           }
                         },
@@ -1057,7 +1139,7 @@
           },
           "badge": {
             "type": "string",
-            "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; or, where it gives no size, Not carried here, Not on their chart, Between chart sizes, Outside standard sizes."
+            "description": "The words the card shows for the rating: Best Match, Strong Match, Good Match, Fair Match; or, where it gives no size, Not carried here, Not on their chart, Outside standard sizes."
           },
           "refused": {
             "type": "boolean"
@@ -1072,6 +1154,47 @@
               "null"
             ],
             "description": "Where a brand's bands stop short of hers: which side, and its last band."
+          },
+          "closest_made": {
+            "type": "object",
+            "description": "Only where the brand doesn't make her size (Not carried here): the closest size it makes, in its own labels (size), and whether it is one step from hers, her sister size one band away or one cup on her band (leads: true), as the card leads with it. Two steps away it is named with a warning in why; farther, it isn't given.",
+            "properties": {
+              "size": {
+                "type": "string"
+              },
+              "leads": {
+                "type": "boolean"
+              }
+            }
+          },
+          "us_size": {
+            "type": "string",
+            "description": "Only where the brand's own stores print European labels (Maison Lejaby's and Livy's French ones): size is that label (85F) and us_size her US size beside it (32DDD)."
+          },
+          "label_system": {
+            "type": "string",
+            "description": "With us_size: the system size is in (FR)."
+          },
+          "store_labels": {
+            "type": "array",
+            "description": "Only where stores print the brand's sizes in other letters than its own store does (Freya's 32DDD is 32E at Nordstrom): the letters, her size in them, and the stores.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "letters": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "string"
+                },
+                "stores": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
           }
         }
       },

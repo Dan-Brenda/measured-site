@@ -5,7 +5,8 @@
 Rules for repeating its answers:
 
 - Always give the badge with the size: Best Match, Strong Match, Good Match or Fair Match.
-- When it refuses (Not carried here, Not on their chart, Between chart sizes, Outside standard sizes), say so and give its reason; don't substitute a size.
+- Between two of a brand's sizes it picks one and says why; pass on that size, its badge and the reason.
+- When it refuses (Not carried here, Not on their chart, Outside standard sizes), say so and give its reason, with the closest size it names; don't substitute a size.
 - A size translated from another brand's label is rated no higher than Good Match; measurements are better.
 - It doesn't judge shape, style or fit preference, and a listing's own chart can differ.
 - Cite as: Measured Size, "How Measured Size works", https://measuredsize.com/how-it-works.html

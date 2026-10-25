@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'sha256-FkIhG4DysTumvjJQ0egkPVCwFCb79YcKufZYAzSHM8A='; img-src data:; base-uri 'none'; form-action 'none'">
 <meta name="description" content="How Measured Size sizes bras: the base-size method, sister sizes, the translation into each brand's own labels, confidence levels and refusals, the brands covered, and a free API and MCP server for AI agents.">
 <link rel="canonical" href="https://measuredsize.com/how-it-works.html">
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Dataset","@id":"https://measuredsize.com/how-it-works.html#brands","name":"Measured Size bra brand sizing summary","description":"For each of 167 bra brands: what it sells (band and cup sizes, letter sizes), how its cup letters compare with US letters, its band and cup range, whether it publishes its own letter chart, and when its sizing was last checked. With the Measured Size fit API, each brand's label for any measurements. Built from the brands' own published sizing; the research notes are not published. The published summary tables (the brand list and each brand's labels for each base size, as shown on the method page and returned by the API) are licensed under CC BY 4.0: credit \"Measured Size\" and link to https://measuredsize.com/how-it-works.html. The code, the research notes, the page readers and the full brand data are private and not licensed.","url":"https://measuredsize.com/how-it-works.html#brands","creator":{"@type":"Organization","name":"Measured Size","url":"https://measuredsize.com/","email":"support@measuredsize.com"},"publisher":{"@type":"Organization","name":"Measured Size","url":"https://measuredsize.com/","email":"support@measuredsize.com"},"isAccessibleForFree":true,"dateModified":"2026-10-17","keywords":["bra size","bra size conversion","sister size","cup size","brand size chart","UK bra size","US bra size"],"variableMeasured":["brand","sizing systems sold","cup letters","band range","cup range","own letter chart","last checked"],"distribution":[{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://api.measuredsize.com/v1/brands"}],"license":"https://creativecommons.org/licenses/by/4.0/","creditText":"Measured Size","usageInfo":"https://measuredsize.com/how-it-works.html#licence"},{"@type":"WebAPI","@id":"https://measuredsize.com/how-it-works.html#api","name":"Measured Size fit API","description":"Bra sizes from underbust and bust measurements, in each brand's own labels, each with its confidence and reason. Also an MCP server for AI agents. Free, no key; nothing sent is stored.","url":"https://api.measuredsize.com","documentation":"https://measuredsize.com/how-it-works.html#api","termsOfService":"https://measuredsize.com/terms.html","provider":{"@type":"Organization","name":"Measured Size","url":"https://measuredsize.com/","email":"support@measuredsize.com"},"isAccessibleForFree":true}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Dataset","@id":"https://measuredsize.com/how-it-works.html#brands","name":"Measured Size bra brand sizing summary","description":"For each of 167 bra brands: what it sells (band and cup sizes, letter sizes), how its cup letters compare with US letters, its band and cup range, whether it publishes its own letter chart, and when its sizing was last checked. With the Measured Size fit API, each brand's label for any measurements. Built from the brands' own published sizing; the research notes are not published. The published summary tables (the brand list and each brand's labels for each base size, as shown on the method page and returned by the API) are licensed under CC BY 4.0: credit \"Measured Size\" and link to https://measuredsize.com/how-it-works.html. The code, the research notes, the page readers and the full brand data are private and not licensed.","url":"https://measuredsize.com/how-it-works.html#brands","creator":{"@type":"Organization","name":"Measured Size","url":"https://measuredsize.com/","email":"support@measuredsize.com"},"publisher":{"@type":"Organization","name":"Measured Size","url":"https://measuredsize.com/","email":"support@measuredsize.com"},"isAccessibleForFree":true,"dateModified":"2026-10-24","keywords":["bra size","bra size conversion","sister size","cup size","brand size chart","UK bra size","US bra size"],"variableMeasured":["brand","sizing systems sold","cup letters","band range","cup range","own letter chart","last checked"],"distribution":[{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://api.measuredsize.com/v1/brands"}],"license":"https://creativecommons.org/licenses/by/4.0/","creditText":"Measured Size","usageInfo":"https://measuredsize.com/how-it-works.html#licence"},{"@type":"WebAPI","@id":"https://measuredsize.com/how-it-works.html#api","name":"Measured Size fit API","description":"Bra sizes from underbust and bust measurements, in each brand's own labels, each with its confidence and reason. Also an MCP server for AI agents. Free, no key; nothing sent is stored.","url":"https://api.measuredsize.com","documentation":"https://measuredsize.com/how-it-works.html#api","termsOfService":"https://measuredsize.com/terms.html","provider":{"@type":"Organization","name":"Measured Size","url":"https://measuredsize.com/","email":"support@measuredsize.com"},"isAccessibleForFree":true}]}</script>
 <title>How Measured Size works</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2248%22%20height%3D%2248%22%20viewBox%3D%220%200%20128%20128%22%3E%0A%20%20%3Crect%20x%3D%226%22%20y%3D%226%22%20width%3D%22116%22%20height%3D%22116%22%20rx%3D%2226%22%20fill%3D%22%23A8556D%22%2F%3E%0A%20%20%3Ctext%20x%3D%2264%22%20y%3D%2279%22%20text-anchor%3D%22middle%22%20font-family%3D%22Georgia%2C%20'Times%20New%20Roman'%2C%20serif%22%20font-weight%3D%22700%22%20font-size%3D%2276%22%20fill%3D%22%23FFFDFB%22%3EM%3C%2Ftext%3E%0A%20%20%3Crect%20x%3D%2222%22%20y%3D%2290%22%20width%3D%2284%22%20height%3D%2218%22%20rx%3D%224%22%20fill%3D%22%23FFFDFB%22%2F%3E%3Crect%20x%3D%2228.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2236.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%225%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2244.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2252.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%225%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2260.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2268.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%225%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2276.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2284.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%225%22%20fill%3D%22%23A8556D%22%2F%3E%3Crect%20x%3D%2292.75%22%20y%3D%2294%22%20width%3D%222.5%22%20height%3D%229%22%20fill%3D%22%23A8556D%22%2F%3E%0A%3C%2Fsvg%3E">
 <style>
@@ -90,14 +90,13 @@ h3 { font: 700 18px/1.3 Georgia, "Times New Roman", serif; margin: 24px 0 6px; c
 <div class="table"><table><thead><tr><th scope="col">Badge</th><th scope="col">What it means</th></tr></thead><tbody>
 <tr><td><strong>Best Match</strong></td><td>Her own size, matched to the listing's own sizes or size chart, or to a brand's chart that has been checked against its real listings, and in stock on the listing.</td></tr>
 <tr><td><strong>Strong Match</strong></td><td>Her own size, matched the same way, with its stock not confirmed: a listing whose stock couldn't be read, and most of the API's and My sizes' answers, which ask with no listing at all.</td></tr>
-<tr><td><strong>Good Match</strong></td><td>A size close to hers (a sister size, one cup or one letter away), or hers with less behind it: a brand's chart not checked against its listings, the listing's own fit notes, a listing whose own words disagree, a listing whose sizes couldn't be read, or a size translated from another brand's label.</td></tr>
-<tr><td><strong>Fair Match</strong></td><td>The usual letter conversion, for a brand with no letter chart of its own, or a size further from hers. A real answer with less behind it; worth checking against the size chart.</td></tr>
+<tr><td><strong>Good Match</strong></td><td>A size close to hers (a sister size, one cup or one letter away), or hers with less behind it: a brand's chart not checked against its listings, the listing's own fit notes, a listing whose own words disagree, a listing whose sizes couldn't be read, a size translated from another brand's label, or the size a brand's own advice picks where she is between two of its sizes.</td></tr>
+<tr><td><strong>Fair Match</strong></td><td>The usual letter conversion, for a brand with no letter chart of its own, a size further from hers, or, where she is between two of a brand's sizes, the one that holds her bust. A real answer with less behind it.</td></tr>
 </tbody></table></div>
 <p>Where the honest answer is no size, it says why instead:</p>
 <div class="table"><table><thead><tr><th scope="col">Answer</th><th scope="col">What it means</th></tr></thead><tbody>
-<tr><td><strong>Not carried here</strong></td><td>The brand doesn't make her band. Its smallest or largest band is named.</td></tr>
+<tr><td><strong>Not carried here</strong></td><td>The brand doesn't make her size: her band or her cup is past what it makes. Its range is named, and the closest size it makes where one is near.</td></tr>
 <tr><td><strong>Not on their chart</strong></td><td>The brand's chart has no row for her measurements.</td></tr>
-<tr><td><strong>Between chart sizes</strong></td><td>Her measurements fall between two rows of the brand's chart. Both are named, and neither is picked.</td></tr>
 <tr><td><strong>Outside standard sizes</strong></td><td>Her band is past 54 or her cup past O, so Measured Size says so rather than guess.</td></tr>
 <tr><td><strong>Not available here</strong></td><td>In the extension only: nothing close to her size is in stock on the listing. The closest size in stock is named.</td></tr>
 </tbody></table></div>
@@ -128,10 +127,10 @@ h3 { font: 700 18px/1.3 Georgia, "Times New Roman", serif; margin: 24px 0 6px; c
 <tr><td>Alo Yoga</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-12</td></tr>
 <tr><td>Ambrielle</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-13</td></tr>
 <tr><td>Amoena</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-13</td></tr>
-<tr><td>Araks</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-10-12</td></tr>
+<tr><td>Araks</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-10-22</td></tr>
 <tr><td>Arizona Body</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-10-13</td></tr>
 <tr><td>ASICS</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-09-27</td></tr>
-<tr><td>Athleta</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-17</td></tr>
+<tr><td>Athleta</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-22</td></tr>
 <tr><td>Aubade</td><td>Band and cup, Letters</td><td>Own: DD is E, DDD is F; ends at H</td><td>Yes</td><td>2026-10-13</td></tr>
 <tr><td>b.tempt'd</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-10-12</td></tr>
 <tr><td>Bare</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-17</td></tr>
@@ -155,30 +154,30 @@ h3 { font: 700 18px/1.3 Georgia, "Times New Roman", serif; margin: 24px 0 6px; c
 <tr><td>Cortland Intimates</td><td>Band and cup</td><td>US; ends at H</td><td>No</td><td>2026-09-28</td></tr>
 <tr><td>COTTON ON BODY</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-12</td></tr>
 <tr><td>Curvy Couture</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-13</td></tr>
-<tr><td>Curvy Kate</td><td>Band and cup</td><td>Own: DDD is E, G is F, H is FF</td><td>No</td><td>2026-09-20</td></tr>
+<tr><td>Curvy Kate</td><td>Band and cup</td><td>Own: DDD is E, G is F, H is FF</td><td>No</td><td>2026-10-21</td></tr>
 <tr><td>CUUP</td><td>Band and cup, Letters</td><td>Own: DD is E, DDD is F; ends at H</td><td>No</td><td>2026-09-26</td></tr>
 <tr><td>Dita Von Teese</td><td>Band and cup, Letters</td><td>US; ends at I</td><td>No</td><td>2026-09-28</td></tr>
 <tr><td>DKNY</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-09-14</td></tr>
 <tr><td>Dominique Intimates</td><td>Band and cup, Letters</td><td>Own: DDD is F; ends at I</td><td>No</td><td>2026-10-14</td></tr>
 <tr><td>DSG</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-09-13</td></tr>
 <tr><td>Elila</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-09-13</td></tr>
-<tr><td>Elomi</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-09-22</td></tr>
+<tr><td>Elomi</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-10-21</td></tr>
 <tr><td>Etam</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-09-13</td></tr>
 <tr><td>Evelyn &amp; Bobbie</td><td>Letters</td><td>US</td><td>No</td><td>2026-10-12</td></tr>
 <tr><td>Exquisite Form</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-13</td></tr>
 <tr><td>Fabletics</td><td>Letters</td><td>US</td><td>No</td><td>2026-09-13</td></tr>
-<tr><td>Fantasie</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-09-22</td></tr>
+<tr><td>Fantasie</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-10-21</td></tr>
 <tr><td>Fashion Forms</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-09-14</td></tr>
 <tr><td>Felina</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-09-27</td></tr>
 <tr><td>Fleur du Mal</td><td>Band and cup, Letters</td><td>Own: DDD is F; ends at G</td><td>Yes</td><td>2026-10-13</td></tr>
 <tr><td>Fleur't</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-10-17</td></tr>
 <tr><td>Forever 21</td><td>Letters</td><td>US</td><td>No</td><td>2026-09-13</td></tr>
 <tr><td>FP Movement</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-09-12</td></tr>
-<tr><td>Freya</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-09-22</td></tr>
+<tr><td>Freya</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-10-21</td></tr>
 <tr><td>Fruit of the Loom</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-09-19</td></tr>
-<tr><td>Gap</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-17</td></tr>
+<tr><td>Gap</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-22</td></tr>
 <tr><td>Glamorise</td><td>Band and cup</td><td>Own: DDD is F</td><td>No</td><td>2026-09-26</td></tr>
-<tr><td>Goddess</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-09-14</td></tr>
+<tr><td>Goddess</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-10-21</td></tr>
 <tr><td>Gymshark</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-09-27</td></tr>
 <tr><td>H&amp;M</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-09-11</td></tr>
 <tr><td>Halara</td><td>Letters</td><td>US</td><td>No</td><td>2026-09-28</td></tr>
@@ -187,7 +186,7 @@ h3 { font: 700 18px/1.3 Georgia, "Times New Roman", serif; margin: 24px 0 6px; c
 <tr><td>HATCH</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-10-13</td></tr>
 <tr><td>Honey Birdette</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-09-23</td></tr>
 <tr><td>Honeylove</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-09-20</td></tr>
-<tr><td>House of Silk</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-10-12</td></tr>
+<tr><td>House of Silk</td><td>Band and cup, Letters</td><td>US; its own stores print EU sizes (32DD is 70E)</td><td>No</td><td>2026-10-22</td></tr>
 <tr><td>Huit</td><td>Band and cup, Letters</td><td>Own: DD is E, DDD is F; ends at F</td><td>No</td><td>2026-09-26</td></tr>
 <tr><td>Hunkemöller</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-09-14</td></tr>
 <tr><td>icebreaker</td><td>Letters</td><td>US</td><td>No</td><td>2026-10-12</td></tr>
@@ -212,9 +211,9 @@ h3 { font: 700 18px/1.3 Georgia, "Times New Roman", serif; margin: 24px 0 6px; c
 <tr><td>Le Mystère</td><td>Band and cup, Letters</td><td>Own: DD is E, DDD is F; ends at J</td><td>Yes</td><td>2026-10-13</td></tr>
 <tr><td>Leonisa</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-12</td></tr>
 <tr><td>Lise Charmel</td><td>Band and cup, Letters</td><td>Own: DD is E, DDD is F; ends at H</td><td>No</td><td>2026-09-26</td></tr>
-<tr><td>Livy</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-12</td></tr>
-<tr><td>lululemon</td><td>Letters</td><td>US</td><td>No</td><td>2026-10-12</td></tr>
-<tr><td>Maison Lejaby</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-09-28</td></tr>
+<tr><td>Livy</td><td>Band and cup, Letters</td><td>US; its own stores print French sizes (32DD is 85E)</td><td>Yes</td><td>2026-10-22</td></tr>
+<tr><td>lululemon</td><td>Letters</td><td>US</td><td>No</td><td>2026-10-22</td></tr>
+<tr><td>Maison Lejaby</td><td>Band and cup</td><td>US; its own stores print French sizes (32DD is 85E)</td><td>No</td><td>2026-10-22</td></tr>
 <tr><td>Marie Jo</td><td>Band and cup, Letters</td><td>US; ends at DDD</td><td>No</td><td>2026-09-27</td></tr>
 <tr><td>Marlies Dekkers</td><td>Band and cup, Letters</td><td>Own: G is F; ends at F</td><td>Yes</td><td>2026-10-12</td></tr>
 <tr><td>Medela</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-10-13</td></tr>
@@ -223,16 +222,16 @@ h3 { font: 700 18px/1.3 Georgia, "Times New Roman", serif; margin: 24px 0 6px; c
 <tr><td>Momcozy</td><td>Letters</td><td>US</td><td>No</td><td>2026-09-14</td></tr>
 <tr><td>Montelle Intimates</td><td>Band and cup</td><td>Own: DD is E, DDD is F; ends at H</td><td>No</td><td>2026-09-20</td></tr>
 <tr><td>Natori</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-09-20</td></tr>
-<tr><td>Naturana</td><td>Band and cup</td><td>Own: DD is E, DDD is F; ends at G</td><td>No</td><td>2026-09-28</td></tr>
+<tr><td>Naturana</td><td>Band and cup</td><td>Own: DD is E, DDD is F; ends at G</td><td>No</td><td>2026-10-24</td></tr>
 <tr><td>New Balance</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-10-17</td></tr>
-<tr><td>Nike</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-09-23</td></tr>
+<tr><td>Nike</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-10-21</td></tr>
 <tr><td>Nordstrom</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-10-13</td></tr>
 <tr><td>Old Navy</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-09-11</td></tr>
 <tr><td>Olga</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-13</td></tr>
 <tr><td>On</td><td>Letters</td><td>US</td><td>No</td><td>2026-10-12</td></tr>
 <tr><td>On Gossamer</td><td>Band and cup, Letters</td><td>US</td><td>Yes</td><td>2026-10-13</td></tr>
 <tr><td>Pact</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-10-17</td></tr>
-<tr><td>Panache</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-09-22</td></tr>
+<tr><td>Panache</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-10-21</td></tr>
 <tr><td>Parfait</td><td>Band and cup</td><td>US</td><td>No</td><td>2026-09-20</td></tr>
 <tr><td>Passionata</td><td>Band and cup, Letters</td><td>Own: DD is E, DDD is F; ends at G</td><td>No</td><td>2026-09-26</td></tr>
 <tr><td>Patagonia</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-10-13</td></tr>
@@ -265,10 +264,10 @@ h3 { font: 700 18px/1.3 Georgia, "Times New Roman", serif; margin: 24px 0 6px; c
 <tr><td>The Natural</td><td>Letters</td><td>US</td><td>No</td><td>2026-09-14</td></tr>
 <tr><td>The North Face</td><td>Letters</td><td>US</td><td>No</td><td>2026-09-13</td></tr>
 <tr><td>ThirdLove</td><td>Band and cup, Letters</td><td>Own: DD is E, DDD is F; ends at H</td><td>Yes</td><td>2026-10-17</td></tr>
-<tr><td>Torrid (Curve Intimates)</td><td>Band and cup</td><td>Own: G is F, H is G, I is H; ends at H</td><td>No</td><td>2026-09-13</td></tr>
+<tr><td>Torrid (Curve Intimates)</td><td>Band and cup</td><td>Own: G is F, H is G, I is H; ends at H</td><td>No</td><td>2026-10-21</td></tr>
 <tr><td>True &amp; Co</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-10-13</td></tr>
 <tr><td>Under Armour</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-10-12</td></tr>
-<tr><td>UNIQLO</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-10-12</td></tr>
+<tr><td>UNIQLO</td><td>Letters</td><td>US</td><td>Yes</td><td>2026-10-21</td></tr>
 <tr><td>Urban Outfitters</td><td>Letters</td><td>US</td><td>No</td><td>2026-10-12</td></tr>
 <tr><td>Va Bien</td><td>Band and cup, Letters</td><td>US</td><td>No</td><td>2026-09-20</td></tr>
 <tr><td>Varley</td><td>Letters</td><td>US</td><td>No</td><td>2026-09-13</td></tr>
@@ -296,7 +295,7 @@ h3 { font: 700 18px/1.3 Georgia, "Times New Roman", serif; margin: 24px 0 6px; c
     "rating": "Strong Match",
     "badge": "Strong Match",
     "refused": false,
-    "why": "Runs true to size, so your size stays the same. Your size here is 32DDD."
+    "why": "Your size here is 32DDD, in standard US sizes."
   },
   "sister_sizes": {
     "band_down": "30G",
@@ -329,7 +328,7 @@ h3 { font: 700 18px/1.3 Georgia, "Times New Roman", serif; margin: 24px 0 6px; c
     "rating": "Strong Match",
     "badge": "Strong Match",
     "refused": false,
-    "why": "Runs true to size, so your size stays the same. Your size here is 32E.",
+    "why": "Your size here is 32E.",
     "band_edge": null
   },
   "letter_sizes": null
@@ -347,7 +346,7 @@ h3 { font: 700 18px/1.3 Georgia, "Times New Roman", serif; margin: 24px 0 6px; c
     "rating": "Good Match",
     "badge": "Good Match",
     "rating_from_measurements": "Strong Match",
-    "why": "Runs true to size, so your size stays the same. Your size here is 32E.",
+    "why": "Your size here is 32E.",
     "band_edge": null
   },
   "why": "32F at SKIMS is Measured Size's 32DDD. A size label says less than her measurements do, so a translated size is rated no higher than Good Match."
