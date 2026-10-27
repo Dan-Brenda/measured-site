@@ -1,6 +1,6 @@
 /* Measured Size's service worker (Phase 387). Built by release/site.js from the files it keeps. Not edited by hand. */
 'use strict';
-const VERSION = 'ab1d7d2b22e30bdb';
+const VERSION = '44bbe92ee21fbd0f';
 const CACHE = 'measured-size-' + VERSION;
 const FILES = {
   "bra-size-calculator.html": {
@@ -13,7 +13,7 @@ const FILES = {
   },
   "bra-size-calculator.js": {
     "text": true,
-    "sha256": "7340060b0717508c479072428fcdb37fe86ce57667e8c3932cc7eaff58b66f4b"
+    "sha256": "c5511f2f662d56203d1ad574ba971f49e176c1c7f07de31b6a337b8d96d69e0d"
   },
   "manifest.webmanifest": {
     "text": true,

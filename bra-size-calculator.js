@@ -5618,13 +5618,21 @@ function rowsConfirmed(grid) {
 if (!grid || grid.splitSelector !== true || grid.cupRowBand == null || !Array.isArray(grid.cupRowCups)) return [];
 return grid.cupRowCups.filter(Boolean).map((cup) => `${grid.cupRowBand}${cup}`);
 }
+function openOnRows(grid) {
+const sold = new Set(Array.isArray(grid.soldOutPairs) ? grid.soldOutPairs : []);
+const asBefore = grid.cupRowFollowsBand === true || grid.cupRowBand == null;
+return {
+bands: grid.availableBands || [],
+cups: (grid.availableCups || []).filter((cup) => asBefore || !sold.has(`${grid.cupRowBand}${cup}`)),
+};
+}
 function closestOnRows(size, grid, madeSizes) {
 if (!size || !grid) return null;
-const openRows = grid.cupRowFollowsBand !== true
-&& Array.isArray(grid.availableBands) && grid.availableBands.length && Array.isArray(grid.availableCups) && grid.availableCups.length;
-const bands = openRows ? grid.availableBands
+const drawn = openOnRows(grid);
+const openRows = grid.cupRowFollowsBand !== true && drawn.bands.length && drawn.cups.length;
+const bands = openRows ? drawn.bands
 : (Array.isArray(grid.offeredBands) && grid.offeredBands.length ? grid.offeredBands : (grid.availableBands || []));
-const cups = openRows ? grid.availableCups
+const cups = openRows ? drawn.cups
 : (Array.isArray(grid.offeredCups) && grid.offeredCups.length ? grid.offeredCups : (grid.availableCups || []));
 let made = (Array.isArray(madeSizes) ? madeSizes : []).map((s) => String(s).replace(/\s+/g, '').toUpperCase()).filter((s) => /^\d{2}[A-Z]+$/.test(s));
 if (!made.length && grid.cupRowFollowsBand === true) {
@@ -5648,14 +5656,16 @@ function sistersOnRows(size, grid, madeSizes) {
 if (!size || !grid || grid.splitSelector !== true) return [];
 const made = (Array.isArray(madeSizes) ? madeSizes : []).map((s) => String(s).replace(/\s+/g, '').toUpperCase()).filter((s) => /^\d{2}[A-Z]+$/.test(s));
 if (!made.length && grid.cupRowFollowsBand === true) return [];
-const open = (row) => (Array.isArray(row) ? row : []);
-const rows = { availableBands: [...new Set([...open(grid.availableBands), size.band])], availableCups: [...new Set([...open(grid.availableCups), size.cup])],
+const drawn = openOnRows(grid);
+const rows = { availableBands: [...new Set([...drawn.bands, size.band])], availableCups: [...new Set([...drawn.cups, size.cup])],
 ...(made.length ? { availablePairs: [...new Set([...made, `${size.band}${size.cup}`])] } : {}),
 ...(Array.isArray(grid.soldOutPairs) ? { soldOutPairs: grid.soldOutPairs.filter((p) => p !== `${size.band}${size.cup}`) } : {}) };
 const found = findAvailableReadableSize({ band: size.band, cup: size.cup }, rows);
 if (found.status !== 'exact') return [];
 const stated = new Set(Array.isArray(grid.statedInStockPairs) ? grid.statedInStockPairs : []);
-const marksNamePairs = Array.isArray(grid.statedInStockPairs) || grid.cupRowBand != null;
+const bandOnlySelected = grid.cupRowFollowsBand !== true && grid.cupRowBand != null && grid.bandRowCup == null;
+const statesNoPair = grid.cupRowFollowsBand !== true && !Array.isArray(grid.statedInStockPairs);
+const marksNamePairs = !bandOnlySelected && !statesNoPair && (Array.isArray(grid.statedInStockPairs) || grid.cupRowBand != null);
 return (found.sisterSizes || []).filter((c) => !marksNamePairs || stated.has(c.label))
 .map((c) => (stated.has(c.label) ? c : { ...c, stockUnread: true }));
 }
@@ -6751,7 +6761,6 @@ base = differs
 ? `This listing is sold in the brand's own numbered sizes, and its own size chart puts your ${shown} in a ${matchDetail.bucketLabel}, not a ${bandOfShown[0]}.`
 : `This listing is sold in the brand's own numbered sizes, and its own size chart puts your ${shown} in a ${matchDetail.bucketLabel}.`;
 } else if (matchDetail.type === 'staticTable') {
-const humanized = humanizeStyleKey(matchDetail.styleKey);
 const calculator = matchDetail.brandCalculator;
 const calculatorBrand = calculator ? (calculator.brandDisplayName || '').replace(/\s*\([^)]*\)\s*$/, '') : '';
 const underbustRow = matchDetail.underbustRow;
@@ -6761,16 +6770,16 @@ const gridBrand = gridCell ? (gridCell.brandDisplayName || '').replace(/\s*\([^)
 const gridUnit = gridCell && gridCell.unit === 'cm' ? ' cm' : '"';
 const gridPlace = (range) => `${range.inRange ? 'in' : 'nearest'} its ${range.min}-${range.max}${gridUnit}`;
 base = underbustRow
-? `This style is sold in letter sizes. ${rowBrand ? `${possessiveName(rowBrand)}` : "This brand's"} size chart for it goes by underbust alone, and puts your ${underbustRow.underbust}" underbust in its ${underbustRow.min}-${underbustRow.max}" row, which it sells as ${matchDetail.bucketLabel}.`
+? `${rowBrand ? `${possessiveName(rowBrand)}` : "This brand's"} size chart for it goes by underbust alone, and puts your ${underbustRow.underbust}" underbust in its ${underbustRow.min}-${underbustRow.max}" row, which it sells as ${matchDetail.bucketLabel}.`
 : gridCell
-? `This style is sold in letter sizes. ${gridBrand ? `${possessiveName(gridBrand)}` : "This brand's"} size chart for it goes by underbust and bust together: your ${gridCell.underbust}" underbust is ${gridPlace(gridCell.underbustRange)} row, and your ${gridCell.bust}" bust ${gridPlace(gridCell.bustRange)} column, which it sells as ${matchDetail.bucketLabel}.`
+? `${gridBrand ? `${possessiveName(gridBrand)}` : "This brand's"} size chart for it goes by underbust and bust together: your ${gridCell.underbust}" underbust is ${gridPlace(gridCell.underbustRange)} row, and your ${gridCell.bust}" bust ${gridPlace(gridCell.bustRange)} column, which it sells as ${matchDetail.bucketLabel}.`
 : calculator
-? `This style is sold in letter sizes. ${calculatorBrand ? `${possessiveName(calculatorBrand)}` : "This brand's"} own size calculator gives your measurements a ${calculator.brandSize}, which ${calculatorBrand ? `${possessiveName(calculatorBrand)}` : 'its'} size chart sells as ${matchDetail.bucketLabel}.`
+? `${calculatorBrand ? `${possessiveName(calculatorBrand)}` : "This brand's"} own size calculator gives your measurements a ${calculator.brandSize}, which ${calculatorBrand ? `${possessiveName(calculatorBrand)}` : 'its'} size chart sells as ${matchDetail.bucketLabel}.`
 : matchDetail.fromPublishedTable && matchDetail.cupGroupSize && matchDetail.cupGroupSize.onListingPage
-? `This ${humanized} style is sold in letter sizes, and the size tool on this listing's page puts your size in its ${matchDetail.bucketLabel}.`
+? `The size tool on this listing's page puts your size in its ${matchDetail.bucketLabel}.`
 : matchDetail.fromPublishedTable
-? `This ${humanized} style is sold in letter sizes, and the brand's own size chart puts your size in its ${matchDetail.bucketLabel}.`
-: `This ${humanized} style is sold in letter sizes, and your measurements match its ${matchDetail.bucketLabel}.`;
+? `The brand's own size chart puts your size in its ${matchDetail.bucketLabel}.`
+: `Your measurements match its ${matchDetail.bucketLabel}.`;
 } else if (matchDetail && matchDetail.type === 'brandCupRange' && matchDetail.brandRange) {
 base = brandRangeWhy(matchDetail.brandRange, matchDetail.brandDisplayName);
 } else if (matchDetail && matchDetail.type === 'brandLetterRange' && matchDetail.letterRange) {
@@ -7808,7 +7817,7 @@ if (c.ratedBy === 'stock not confirmed') {
 return "This size couldn't be checked for stock here, so check it when you pick your size.";
 }
 if (c.ratedBy === 'a style read between two') {
-return "This bra's style was read two ways, and one can fit differently from brand to brand; your size stays the same, and the listing's fit notes can help.";
+return "This bra's style was read two ways, and one can fit differently from brand to brand; your size stays the same either way.";
 }
 if (c.ratedBy === 'an option made for two cups') {
 return `${size} is sold here in an option made for two cups, so it may fit a little looser or snugger than a single cup size.`;
@@ -7818,7 +7827,7 @@ const name = c.brandName ? String(c.brandName).replace(/\s*\([^)]*\)\s*$/, '') :
 return `${name ? possessiveName(name) : "The brand's"} cup letters past DD can differ from the usual ones, so ${size} may go by another letter there.`;
 }
 if (c.ratedBy === 'a disputed style' && c.styleKey) {
-return `${capitalize(humanizeStyleKey(c.styleKey))} styles fit differently from brand to brand, so if this one feels off, the listing's fit notes are the best guide.`;
+return `${capitalize(humanizeStyleKey(c.styleKey))} styles fit differently from brand to brand, but your size stays the same.`;
 }
 if (c.ratedBy === 'not confirmed in stock here' && !c.substituted) {
 return `This listing's sizes couldn't be read, so check that ${size} is offered when you pick your size.`;
@@ -7832,7 +7841,7 @@ if (c.ratedBy === 'a disputed style, at a brand whose sizing is verified' && c.d
 const name = c.disputed.brandDisplayName ? String(c.disputed.brandDisplayName).replace(/\s*\([^)]*\)\s*$/, '') : '';
 const brand = name ? `${possessiveName(name)}` : "The brand's";
 const style = c.disputed.styleKey ? humanizeStyleKey(c.disputed.styleKey) : 'this';
-return `${size} matches ${brand} own sizing, but ${style} styles fit differently from brand to brand, so the listing's fit notes are worth a look.`;
+return `${size} matches ${brand} own sizing; ${style} styles fit differently from brand to brand, but your size stays the same.`;
 }
 return null;
 }
@@ -8931,6 +8940,8 @@ const unmade = !(brandEntry && brandEntry.cup_display) ? findUnmadeListingSize(o
 const feedMade = (response.variantFeed && Array.isArray(response.variantFeed.madePairs) && response.variantFeed.madePairs.length)
 ? response.variantFeed.madePairs : null;
 const unmadeByList = !!(feedMade && !feedMade.includes(`${adjusted.band}${adjusted.cup}`));
+const soldOutOnHerBand = (grid.cupRowFollowsBand !== true && grid.cupRowBand === adjusted.band && Array.isArray(grid.soldOutPairs) && grid.soldOutPairs.includes(`${adjusted.band}${adjusted.cup}`))
+? onSelectedBandRows(adjusted, grid) : null;
 if (gridSaysNotMade(grid, adjusted)) {
 gridResult = notMadeByRows(adjusted, grid, response.listingMadeSizes);
 } else if (unmade) {
@@ -8960,6 +8971,8 @@ crossedOnRows: { band: !grid.availableBands.includes(adjusted.band), cup: !grid.
 soldOutOnRows: `${adjusted.band}${adjusted.cup}`,
 ...(within ? { nearestBeyondReach: within } : {}),
 };
+} else if (soldOutOnHerBand) {
+gridResult = soldOutOnHerBand;
 } else {
 const label = `${adjusted.band}${adjusted.cup}`;
 const stated = Array.isArray(grid.statedInStockPairs) && grid.statedInStockPairs.includes(label);
