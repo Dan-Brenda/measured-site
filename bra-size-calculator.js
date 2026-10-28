@@ -5224,6 +5224,15 @@ function sistersOneBandAway(found) {
 return found.filter((c) => isSisterRelation(c.relation) && Math.abs(c.bandDiff) === MAX_BAND_SUBSTITUTION_STEPS)
 .sort((x, y) => y.bandDiff - x.bandDiff).map((c) => withoutDiffs(c));
 }
+function nearerSister(a, b, underbust) {
+if (typeof underbust === 'number' && Number.isFinite(underbust)) {
+const da = Math.abs(a.band - underbust);
+const db = Math.abs(b.band - underbust);
+if (da !== db) return da < db;
+return a.band > b.band;
+}
+return false;
+}
 function withLabel(node) {
 return { ...node, label: `${node.band}${node.cup}` };
 }
@@ -5252,7 +5261,8 @@ const found = cupRow.filter((entry) => entry && entry.printed && entry.inStock).
 return found.length ? found : null;
 }
 function findAvailableReadableSize(styleAdjustedSize, grid) {
-const trueSize = withLabel(styleAdjustedSize);
+const { underbust, ...herSize } = styleAdjustedSize || {};
+const trueSize = withLabel(herSize);
 if (grid && grid.nothingInStock === true && Array.isArray(grid.availablePairs) && !grid.availablePairs.length) {
 return {
 status: 'out-of-range',
@@ -5315,7 +5325,8 @@ bandDiff,
 cupDiff,
 };
 inStock.push(candidate);
-if (!bestByCategory[category] || distance < bestByCategory[category].distance) {
+if (!bestByCategory[category] || distance < bestByCategory[category].distance
+|| (category === 'sister' && distance === bestByCategory[category].distance && nearerSister(candidate, bestByCategory[category], underbust))) {
 bestByCategory[category] = candidate;
 }
 }
@@ -6703,7 +6714,9 @@ base = `This listing is sold in the brand's own numbered sizes, not band and cup
 } else if (matchDetail.type === 'unresolvedAlpha') {
 const humanized = humanizeStyleKey(matchDetail.styleKey);
 const shown = displayBaseLabel || matchDetail.baseLabel;
-base = `${styleSubject(humanized, 'styles')} are sold in S/M/L, and no letter clearly matches your size here, so this is your band and cup size, ${shown}.`;
+base = matchDetail.soldInBandCup
+? `This listing is sold in band and cup sizes, so this is your band and cup size, ${shown}.`
+: `${styleSubject(humanized, 'styles')} are sold in S/M/L, and no letter clearly matches your size here, so this is your band and cup size, ${shown}.`;
 } else if (matchDetail.type === 'listedSizesLeaveOut') {
 const shown = displayBaseLabel || matchDetail.baseLabel;
 base = `This listing's own size options each list the band and cup sizes they are made for, and none lists your size, ${shown}, or a sister size of it.`;
@@ -6744,7 +6757,9 @@ const meaning = lettering.reading === 'continental' ? 'E is the US DD and F the 
 base = `${base} Its cup letters were read the way listings printing them like this mean them (${meaning}); the listing doesn't say so itself.`;
 }
 } else if (matchDetail.type === 'letterConsensus') {
-base = matchDetail.overBrandRecord
+base = matchDetail.nearestCell
+? `Most brands' letter charts stop before your ${displayBaseLabel || matchDetail.baseLabel}; ${matchDetail.equivalentOf || matchDetail.bucketLabel} is the size they give ${matchDetail.nearestCell.sister ? `your sister size, ${matchDetail.nearestCell.label}` : `the nearest size they list, ${matchDetail.nearestCell.label}`}.`
+: matchDetail.overBrandRecord
 ? `${possessiveName(matchDetail.overBrandRecord)} letters vary by style; ${matchDetail.equivalentOf || matchDetail.bucketLabel} is the size most brands give your ${displayBaseLabel || matchDetail.baseLabel}.`
 : usualLetterSentence(matchDetail, displayBaseLabel);
 } else if (matchDetail.type === 'betweenSizes') {
@@ -7878,7 +7893,7 @@ const SIZES_NOT_SHOWN_YET_LINE = "Waiting for this listing's sizes to load.";
 function storeSizesUnreadLine(size, letter, notShownYet) {
 if (notShownYet) return SIZES_NOT_SHOWN_YET_LINE;
 if (!letter) return STORE_SIZES_UNREAD_LINE;
-return `${size}, or ${letter} in letter sizes, from your measurements. This store's sizes couldn't be read.`;
+return `${letter}, from your measurements; your band and cup size is ${size}. This store's sizes couldn't be read.`;
 }
 function bandOnlyDistancePhrase(bandDiff) {
 const words = _bcK.NUMBER_WORDS;
@@ -8457,6 +8472,80 @@ nearestBeyondReach: { targetLabel: label, band: top.band, cup: top.cup, label: t
 }
 return soldOut ? { ...result, soldOutOnRows: label } : result;
 }
+const LETTER_STYLE_FALLBACK_KINDS = ['no verified conversion', 'size not listed', 'cup not verified for band/cup bras', 'band outside chart'];
+function letterForLetterStyle(adjusted, ctx) {
+if (!adjusted || adjusted.unresolvedAlphaSize !== true) return adjusted;
+const factors = adjusted.confidenceFactors || {};
+const detail = factors.matchDetail || {};
+if (detail.type !== 'unresolvedAlpha' || detail.listingBrandSizeChart || !LETTER_STYLE_FALLBACK_KINDS.includes(detail.failureKind)) return adjusted;
+if (detail.failedTable === "this listing's own chart") return adjusted;
+if (!ctx.noListing && ctx.pageSizesRead) {
+return ctx.bandCupRows ? { ...adjusted, confidenceFactors: { ...factors, matchDetail: { ...detail, soldInBandCup: true } } } : adjusted;
+}
+if (ctx.noListing && brandLevelLetterRange(adjusted, ctx.brandEntry, ctx.detectionMeta, ctx.brandBaseSize, null) !== adjusted) return adjusted;
+const m = ctx.measurements || {};
+const own = _daEngine().calculateSize(Number(m.underbust), Number(m.bust));
+if (!own || own.beyondLadder || own.beyondBandLadder || own.band == null || !own.cup) return adjusted;
+const lc = _daNode ? require('./letterConsensus') : { letterConsensusFor, LETTER_CONSENSUS, LETTER_CONSENSUS_FAMILIES };
+const K = _daNode ? require('./sizingConstants') : SIZING_CONSTANTS;
+const meta = ctx.detectionMeta || {};
+const ask = (band, cup) => lc.letterConsensusFor(band, cup, meta.listingLetters || null, meta.listingLettersInStock || null);
+let hit = ask(own.band, own.cup);
+let nearest = null;
+if (!hit) {
+const at = K.CUP_LETTERS.indexOf(own.cup);
+const cells = Object.keys(lc.LETTER_CONSENSUS).map((key) => /^(\d+)([A-Z]+)$/.exec(key)).filter(Boolean).map((x) => {
+const bandDiff = (Number(x[1]) - own.band) / 2;
+const volumeDiff = (K.CUP_LETTERS.indexOf(x[2]) - at) + bandDiff;
+return { band: Number(x[1]), cup: x[2], label: `${x[1]}${x[2]}`, bandDiff, volumeDiff, steps: K.sizeSteps(bandDiff, volumeDiff) };
+}).filter((c) => K.CUP_LETTERS.indexOf(c.cup) !== -1 && c.steps <= 2 * K.MAX_LEAD_STEPS)
+.sort((a, b) => a.steps - b.steps || Math.abs(a.volumeDiff) - Math.abs(b.volumeDiff) || Math.abs(a.bandDiff) - Math.abs(b.bandDiff) || b.band - a.band);
+for (const c of cells) {
+const h = ask(c.band, c.cup);
+if (h) { hit = h; nearest = c; break; }
+}
+}
+if (!hit) return adjusted;
+const family = (lc.LETTER_CONSENSUS_FAMILIES || {})[hit.family] || [];
+const offered = (meta.listingLetters || []).map((l) => String(l).trim().toUpperCase());
+const listed = family.filter((letter) => offered.includes(letter));
+const brand = (ctx.brandEntry && ctx.brandEntry.display_name) || null;
+return {
+label: hit.label,
+band: null,
+cup: null,
+confidence: 'Uncertain, check size chart',
+detailQuality: adjusted.detailQuality,
+confidenceFactors: {
+...factors,
+usesOwnSizingTable: true,
+matchDetail: {
+type: 'letterConsensus',
+styleKey: detail.styleKey || factors.styleKey || null,
+bucketLabel: hit.label,
+baseLabel: own.label,
+cell: hit.cell,
+family: hit.family,
+agree: hit.agree,
+total: hit.total,
+spread: hit.spread,
+...(hit.split ? { split: hit.split, splitPick: hit.splitPick } : {}),
+...(hit.equivalentOf ? { equivalentOf: hit.equivalentOf } : {}),
+letterStyleFallback: { from: detail.failureKind, brand },
+...(nearest ? { nearestCell: { label: nearest.label, sister: nearest.volumeDiff === 0 && nearest.bandDiff !== 0 } }
+: (brand && detail.failureKind !== 'no verified conversion' ? { overBrandRecord: brand } : {})),
+...(meta.brandChartOnRecord ? { brandChartOnRecord: true } : {}),
+},
+},
+alphaSequence: listed.length ? listed : family.slice(),
+fitInstructionNote: adjusted.fitInstructionNote || null,
+styleAttributeNote: adjusted.styleAttributeNote || null,
+};
+}
+function underbustOf(measurements) {
+const u = measurements && Number(measurements.underbust);
+return Number.isFinite(u) && u > 0 ? { underbust: u } : {};
+}
 function decideAnswer(response, measurements, brandData, styleModifiers) {
 const {
 calculateSize,
@@ -8548,6 +8637,11 @@ let brandBaseSize = (brandEntry && brandEntry.band_formula)
 ? calculateBrandSize(measurements.underbust, measurements.bust, brandEntry)
 : calculateSize(measurements.underbust, measurements.bust);
 let adjusted = getAdjustedSize(brandBaseSize, response.product.styleKey, styleModifiers, detectionMeta);
+adjusted = letterForLetterStyle(adjusted, {
+measurements, brandEntry, detectionMeta, brandBaseSize, noListing: response.noListing === true,
+pageSizesRead: !!(response.grid || response.bandOnly || (response.alphaGrid && ((response.alphaGrid.offeredLabels || response.alphaGrid.availableLabels) || []).length)),
+bandCupRows: !!(response.grid || response.bandOnly),
+});
 const styleStepBase = brandBaseSize;
 if (brandBaseSize.belowBandFloor) {
 const matchDetail = adjusted.confidenceFactors && adjusted.confidenceFactors.matchDetail;
@@ -8671,7 +8765,7 @@ if (hasNoResolvableAlphaSize(adjusted)) {
 gridSkippedReason = 'no-size-resolved';
 if (gridSaysNotMade(response.grid, brandBaseSize)) {
 gridResult = sizeGridPairsReadable(response.grid) && Array.isArray(response.grid.availablePairs)
-? findAvailableSize({ band: brandBaseSize.band, cup: brandBaseSize.cup }, response.grid)
+? findAvailableSize({ band: brandBaseSize.band, cup: brandBaseSize.cup, ...underbustOf(measurements) }, response.grid)
 : notMadeByRows(brandBaseSize, response.grid, response.listingMadeSizes);
 if (typeof withStockShown === 'function' && gridResult.status !== 'out-of-range') gridResult = withStockShown(gridResult, response.grid);
 gridSkippedReason = null;
@@ -8987,7 +9081,7 @@ note: '',
 };
 }
 } else {
-gridResult = findAvailableSize({ band: adjusted.band, cup: adjusted.cup }, response.grid);
+gridResult = findAvailableSize({ band: adjusted.band, cup: adjusted.cup, ...underbustOf(measurements) }, response.grid);
 if (typeof withStockShown === 'function') gridResult = withStockShown(gridResult, response.grid);
 }
 if (response.sizeListUnread === true && gridSkippedReason === 'no-grid-data' && !response.grid && !response.alphaGrid) {
@@ -8997,15 +9091,18 @@ const sizesNotDrawnYet = response.sizesNotDrawnYet === true;
 if ((response.storeUnknown === true || sizesNotDrawnYet) && (gridSkippedReason === 'no-grid-data' || gridSkippedReason === 'size-list-unread')
 && !response.grid && !response.alphaGrid && !response.bandOnly && !response.oneSizeOnly && !adjusted.outOfScope) {
 const base = brandBaseSize;
+const nearestCellLetter = !!(adjusted.confidenceFactors && adjusted.confidenceFactors.matchDetail && adjusted.confidenceFactors.matchDetail.nearestCell);
 const usualLetter = (adjusted.band == null && adjusted.label && !adjusted.outOfScope && !hasNoResolvableAlphaSize(adjusted)
-&& !/^\d/.test(String(adjusted.label))) ? adjusted.label : null;
+&& !/^\d/.test(String(adjusted.label)) && !nearestCellLetter) ? adjusted.label : null;
 adjusted = {
+...(usualLetter ? { label: usualLetter, band: null, cup: null } : {
 label: base.label,
 band: base.band,
 cup: base.cup,
 ...(base.belowBandFloor ? { belowBandFloor: base.belowBandFloor } : {}),
 ...(base.beyondLadder ? { beyondLadder: base.beyondLadder } : {}),
 ...(base.beyondBandLadder ? { beyondBandLadder: base.beyondBandLadder } : {}),
+}),
 confidence: 'Uncertain, check size chart',
 confidenceFactors: {
 source: response.product.source,
