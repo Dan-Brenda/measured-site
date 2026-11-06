@@ -3070,6 +3070,7 @@ const LISTING_LETTERING_CAPPED_RATINGS = _saK.RATING_LADDER.slice(0, 2);
 const LISTING_LETTERING_CAP = _saK.RATING_LADDER[2];
 function withListingCupLetters(result, lettering) {
 if (!result || !lettering || result.band == null) return result;
+if (lettering.decidedBy === 'sizeGuide' && result.cup !== 'DD') return result;
 const facts = { reading: lettering.reading, decidedBy: lettering.decidedBy, pastDD: (lettering.pastDD || []).slice() };
 const added = (lettering.decidedBy === 'brand' && Array.isArray(lettering.added)) ? lettering.added : null;
 if (added) {
@@ -4089,6 +4090,10 @@ theirs: ['AA', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'],
 listing_f_for_ddd: {
 ours: ['AA', 'A', 'B', 'C', 'D', 'DD', 'DDD', 'G', 'H', 'I', 'J', 'K'],
 theirs: ['AA', 'A', 'B', 'C', 'D', 'DD', 'F', 'G', 'H', 'I', 'J', 'K'],
+},
+listing_e_for_dd: {
+ours: ['AA', 'A', 'B', 'C', 'D', 'DD', 'DDD', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'],
+theirs: ['AA', 'A', 'B', 'C', 'D', 'E', 'DDD', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'],
 },
 };
 function entryForListingCupLetters(brandEntry, lettering) {
@@ -7338,6 +7343,9 @@ return 'This store prints UK cup letters, so your size is shown in UK letters.';
 if (letters.decidedBy === 'brandStore') {
 return `This store prints ${possessiveName(letters.brandName || 'this brand')} sizes in UK cup letters, so your size is shown in UK letters.`;
 }
+if (letters.decidedBy === 'sizeGuide') {
+return "This listing prints E where next's size guide has the US DD, so your size is shown that way.";
+}
 if (letters.decidedBy === 'brand' && Array.isArray(letters.added) && letters.added.length) {
 const brand = letters.brandName || 'This brand';
 const added = letters.added.slice(0, 3);
@@ -8636,6 +8644,9 @@ detectionMeta.usualLetterOverBrandRecord = true;
 let brandBaseSize = (brandEntry && brandEntry.band_formula)
 ? calculateBrandSize(measurements.underbust, measurements.bust, brandEntry)
 : calculateSize(measurements.underbust, measurements.bust);
+if (response.grid && response.grid.rowsOfType && _daEngine().rowsLeaveOut(response.grid, brandBaseSize)) {
+response = { ...response, grid: null };
+}
 let adjusted = getAdjustedSize(brandBaseSize, response.product.styleKey, styleModifiers, detectionMeta);
 adjusted = letterForLetterStyle(adjusted, {
 measurements, brandEntry, detectionMeta, brandBaseSize, noListing: response.noListing === true,

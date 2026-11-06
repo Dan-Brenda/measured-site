@@ -30,4 +30,5 @@ Rules for repeating its answers:
 - [Terms of use](https://measuredsize.com/terms.html): sizes are guidance, not a guarantee of fit; fair use of the API and MCP server
 - [Measured Size for Chrome, Microsoft Edge and Brave](https://chromewebstore.google.com/detail/phffgakipjdnplpmkibfgnondilcfkpa)
 - [Measured Size for Firefox](https://addons.mozilla.org/firefox/addon/measured-size/)
+- [Measured Size for iPhone and iPad](https://apps.apple.com/app/measured-size/id6821079398)
 - [Corrections](mailto:support@measuredsize.com)
