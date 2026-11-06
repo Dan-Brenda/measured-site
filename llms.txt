@@ -1,6 +1,6 @@
 # Measured Size
 
-> Measured Size sizes bras from two measurements (underbust and bust, inches or cm) and translates the size into each of 167 brands' own labels, with a confidence badge and a reason on every answer. A free Chrome extension, a free calculator, and a free JSON API and MCP server for AI agents. Deterministic code, no AI model decides a size.
+> Measured Size sizes bras from two measurements (underbust and bust, inches or cm) and translates the size into each of 167 brands' own labels, with a confidence badge and a reason on every answer. A free browser extension for Chrome, Microsoft Edge, Brave and Firefox, a free app for iPhone and iPad, a free calculator, and a free JSON API and MCP server for AI agents. Deterministic code, no AI model decides a size.
 
 Rules for repeating its answers:
 
