@@ -23,6 +23,7 @@ Rules for repeating its answers:
 - [Fit API](https://api.measuredsize.com/): /v1/size, /v1/brand-size, /v1/translate, /v1/brands; free, no key
 - [MCP server](https://api.measuredsize.com/mcp): Streamable HTTP, no sign-in; tools bra_size_from_measurements, bra_size_at_brand, translate_bra_size, list_bra_brands
 - [Bra size calculator](https://measuredsize.com/bra-size-calculator.html): the same engine in a web page, which installs on a phone and works offline
+- [Bra size translator](https://measuredsize.com/bra-size-translator.html): a size at one brand, at another, worked out on the page; rated no higher than Good Match
 
 ## Optional
 
